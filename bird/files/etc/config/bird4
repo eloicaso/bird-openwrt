@@ -1,0 +1,88 @@
+##############################################################
+#                    BIRD CONFIGURATION                      #
+##############################################################
+config bird 'bird'
+	option useUCIconfig '0'
+		#Caution! Enabling this option, Bird will translate this
+		#UCI file and use it instead of /etc/bird4.conf
+	option UCIconfigFile '/tmp/bird4.conf'
+		#If you enable useUCIconfig, UCIconfigFile will be Bird's
+		#configuration file location.
+
+##############################################################
+#                   GLOBAL CONFIGURATION                      #
+##############################################################
+config global 'global'
+    option logFile '/tmp/bird.log'
+    option log 'all'
+    option debug 'all'
+    option id '172.16.1.6'
+    option table 'arf'
+
+##############################################################
+#                   BASIC CONFIGURATION                      #
+##############################################################
+config kernel kernel1
+	option table 'arf'
+	option import 'all'
+	option export 'all'
+	option scanTime '10'
+	option tablePriority '100'
+	option learn '1'
+	option persist '0'
+	option disabled '0'
+
+config device device1
+    option scanTime '10'
+	list primaryIface 'eth0:192.168.1.1'
+	list primary '192.168.0.0/16'
+    option disabled '0'
+
+config static static1
+	option table 'arf'
+	option disabled '0'
+
+config bgp bgp1
+	option table 'arf'
+	option import 'all'
+	option export 'all'
+	option as '65001'
+	option disabled '0'
+
+##############################################################
+#                  NEIGHBOR CONFIGURATION                    #
+##############################################################
+config neighbor
+	option type 'bgp'
+	option instance 'bgpMK'
+	option addr '172.16.1.5'
+	option as '65530'
+
+##############################################################
+#                   ROUTES CONFIGURATION                     #
+##############################################################
+config route
+	option instance 'static1'
+	option type 'general'
+	option addr '192.168.9.0/24'
+	list via '10.99.105.159'
+
+config route 
+	option instance 'static1'
+	option type 'special'
+	option addr '192.168.2.0/24'
+	option attribute 'unreachable'
+
+config route
+	option instance 'static1'
+	option type 'iface'
+	option addr '192.168.3.0/24'
+	option iface 'mgmt0'
+
+config route
+	option instance 'static1'
+	option type 'multipath'
+	option addr '192.168.30.0/24'
+	list via '172.16.1.5'
+	list via '172.16.1.6'
+	list viaWeight '172.16.1.2:70'

@@ -1,0 +1,9 @@
+GSoC 2014 - BGP/Bird integration with OpenWRT and QMP
+
+Package for OpenWRT to bring integration with UCI and LUCI to Bird4
+(Bird6 coming soon)
+
+Dependences: +bird4 +libuci +luci +luci-base +luci-mod-admin-full +uci + libuci-lua
+
+Eloi Carbó
+
