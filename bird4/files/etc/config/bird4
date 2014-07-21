@@ -34,8 +34,8 @@ config kernel kernel1
 
 config device device1
     option scanTime '10'
-	list primaryIface 'eth0:192.168.1.1'
-	list primary '192.168.0.0/16'
+	#list primaryIface 'eth0:192.168.1.1'
+	#list primary '192.168.0.0/16'
     option disabled '0'
 
 config static static1
@@ -54,7 +54,7 @@ config bgp bgp1
 ##############################################################
 config neighbor
 	option type 'bgp'
-	option instance 'bgpMK'
+	option instance 'bgp1'
 	option addr '172.16.1.5'
 	option as '65530'
 
