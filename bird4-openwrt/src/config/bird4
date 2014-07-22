@@ -1,0 +1,91 @@
+##############################################################
+#                    BIRD CONFIGURATION                      #
+##############################################################
+config bird 'bird'
+    option use_UCI_config '1'
+        #Caution! Enabling this option, Bird will translate this
+        #UCI file and use it instead of /etc/bird4.conf
+    option UCI_config_file '/tmp/bird4.conf'
+        #If you enable useUCIconfig, UCIconfigFile will be Bird's
+        #configuration file location.
+
+##############################################################
+#                   GLOBAL CONFIGURATION                      #
+##############################################################
+config global 'global'
+    option log_file '/tmp/bird.log'
+    option log 'all'
+    option debug 'off'
+    option router_id '172.16.1.6'
+
+##############################################################
+#                   TABLE CONFIGURATION                      #
+##############################################################
+config table
+    option name 'aux'
+    
+##############################################################
+#                   BASIC CONFIGURATION                      #
+##############################################################
+config kernel kernel1
+        option table 'aux'
+        option import 'all'
+        option export 'all'
+        option scan_time '10'
+        option kernel_table '100'
+        option learn '1'
+        option persist '0'
+        option disabled '0'
+
+config device device1
+        option scan_time '10'
+        option disabled '0'
+
+config static static1
+        option table 'aux'
+        option disabled '0'
+
+config bgp bgp1
+    option template 'bgp_common'
+    option neighbor_address '172.16.1.5'
+    option neighbor_as '65530'
+
+##############################################################
+#                    PROTOCOL TEMPLATES                      #
+##############################################################
+config bgp_template bgp_common
+    option table 'aux'
+    option import 'all'
+    option export 'all'
+    option local_address '172.16.1.6'
+    option local_as '65001'
+    option disabled '0'
+
+
+##############################################################
+#                   ROUTES CONFIGURATION                     #
+##############################################################
+config route
+        option instance 'static1'
+        option type 'router'
+        option prefix '192.168.9.0/24'
+        option via '10.99.105.159'
+
+config route
+        option instance 'static1'
+        option type 'special'
+        option prefix '192.168.2.0/24'
+        option attribute 'unreachable'
+
+config route
+        option instance 'static1'
+        option type 'iface'
+        option prefix '192.168.3.0/24'
+        option iface 'mgmt0'
+
+config route
+        option instance 'static1'
+        option type 'multipath'
+        option prefix '192.168.30.0/24'
+        list via '172.16.1.5'
+        list via '172.16.1.6'

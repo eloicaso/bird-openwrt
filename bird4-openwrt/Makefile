@@ -18,35 +18,31 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
-PKG_NAME:=bird-openwrt
-PKG_RELEASE:=1.0
+PKG_NAME:=bird4-openwrt
+PKG_RELEASE:=0.1
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
-
-TIMESTAMP := $(shell date -u +%Y%m%d-%H%M)
-GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-GIT_HASH := $(shell git rev-parse HEAD)
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/bird-openwrt
+define Package/$(PKG_NAME)
+	TITLE:=UCI and LUCI Bird4 integration
 	SECTION:=net
-	CATEGORY:=Base system
-	TITLE:=UCI and LUCI Bird integration
 	URL:=https://github.com/eloicaso/bird-openwrt
 	DEPENDS:= \
 	+bird4 +libuci +luci +luci-base +luci-mod-admin-full +uci + libuci-lua
 endef
 
-define Package/bird-openwrt/description
-   		Integration of Bird with OpenWRT (UCI+LUCI)
+define Package/$(PKG_NAME)/description
+   		Integration of Bird4 with OpenWRT (UCI+LUCI)
 endef
 
-define Package/bird-openwrt/conffiles
+#define Package/$(PKG_NAME)/conffiles
 /etc/config/bird4
-endef
+#endef
 
 define Build/Prepare
-mkdir -p $(PKG_BUILD_DIR)
+	@rm -rf $(PKG_BUILD_DIR) || true
+	mkdir -p $(PKG_BUILD_DIR)
 endef
 
 define Build/Configure
@@ -55,12 +51,12 @@ endef
 define Build/Compile
 endef
 
-define Package/bird-openwrt/install
-$(CP) ./files/* $(1)/
-$(INSTALL_DIR) $(1)/save
-echo "$(TIMESTAMP)" > $(1)/etc/bird-openwrt.version
-echo "$(GIT_BRANCH)" >> $(1)/etc/bird-openwrt.version  
-echo "$(GIT_HASH)" >> $(1)/etc/bird-openwrt.version
+define Package/$(PKG_NAME)/install
+	$(CP) ./files/* $(1)/
+	$(INSTALL_DIR) $(1)/save
+	echo "$(TIMESTAMP)" > $(1)/etc/bird-openwrt.version
+	echo "$(GIT_BRANCH)" >> $(1)/etc/bird-openwrt.version  
+	echo "$(GIT_HASH)" >> $(1)/etc/bird-openwrt.version
 endef
 
-$(eval $(call BuildPackage,bird-openwrt))
+$(eval $(call BuildPackage,$(PKG_NAME)))
