@@ -14,16 +14,35 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
---]]
+]]--
 
 require("luci.sys")
 local http = require "luci.http"
+local uci = require "luci.model.uci"
+local uciout = uci.cursor()
 
 m=Map("bird4", "Bird4 general configuration")
 
-local uci = luci.model.uci.cursor()
+t = {}
 
+uciout:foreach("bird4","kernel", function (s)
+    if s.kernel_table ~= nil then
+        tables.insert(t, s.kernel_table)
+    end
+end)
 
+overview_form = m:SimpleForm("overview", translate("Overview"), translate("List of available bird routes"))
+overview_form.reset = false
+overview_form.submit = false
+
+routes = overview_form:section(Table, luci.sys.process.list())
+for _, kt in ipairs(t) do
+    local ox = os.execute("ip r ls t "..kt)
+    t:option(DummyValue, "Table "..kt..":", "")
+    t:option(DummyValue, ox, "")
+end
+
+--[[
 -- Named section: "bird"
 
 s_bird_uci = m:section(NamedSection, "bird", "bird", "Bird4 file settings", "")
@@ -64,7 +83,7 @@ d:value("filters","Filters")
 d:value("interfaces","Interfaces")
 d:value("events","Events")
 d:value("packets","Packets")
-
+--]]
 
 
 

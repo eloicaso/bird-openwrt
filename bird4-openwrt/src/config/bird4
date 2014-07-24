@@ -84,6 +84,12 @@ config route
         option iface 'mgmt0'
 
 config route
+		option instance 'static1'
+		option type 'recursive'
+		option prefix '192.168.4.0/24'
+		option ip '192.168.1.1'
+
+config route
         option instance 'static1'
         option type 'multipath'
         option prefix '192.168.30.0/24'

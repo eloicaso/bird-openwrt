@@ -27,14 +27,19 @@ include $(INCLUDE_DIR)/package.mk
 define Package/$(PKG_NAME)
 	TITLE:=UCI and LUCI Bird4 integration
 	SECTION:=net
+	CATEGORY:=Base system
 	MAINTAINER:= Eloi Carbo <eloicaso@gmail.com>
 	URL:=https://github.com/eloicaso/bird-openwrt
 	DEPENDS:= \
-	+bird4 +libuci +luci +luci-base +luci-mod-admin-full +uci + libuci-lua
+	+bird4 +libuci +luci +luci-base +luci-mod-admin-full +uci +libuci-lua
 endef
 
 define Package/$(PKG_NAME)/description
    		Integration of Bird4 with OpenWRT (UCI+LUCI)
+endef
+
+define Package/$(PKG_NAME)/conffiles
+	/etc/config/bird4
 endef
 
 define Build/Prepare
