@@ -25,23 +25,6 @@ m=Map("bird4", "Bird4 general configuration")
 
 t = {}
 
-uciout:foreach("bird4","kernel", function (s)
-    if s.kernel_table ~= nil then
-        tables.insert(t, s.kernel_table)
-    end
-end)
-
-overview_form = m:SimpleForm("overview", translate("Overview"), translate("List of available bird routes"))
-overview_form.reset = false
-overview_form.submit = false
-
-routes = overview_form:section(Table, luci.sys.process.list())
-for _, kt in ipairs(t) do
-    local ox = os.execute("ip r ls t "..kt)
-    t:option(DummyValue, "Table "..kt..":", "")
-    t:option(DummyValue, ox, "")
-end
-
 --[[
 -- Named section: "bird"
 
@@ -84,6 +67,7 @@ d:value("interfaces","Interfaces")
 d:value("events","Events")
 d:value("packets","Packets")
 --]]
+
 
 
 

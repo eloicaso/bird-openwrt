@@ -160,7 +160,7 @@ end
 
 sect_routes = m:section(TypedSection, "route", "Routes configuration", "Configuration of the routes used in static protocols.")
 sect_routes.addremove = true
-sect_routes.anonymous = false
+sect_routes.anonymous = true
 
 --sect_routes.sectiontitle = function (self, section)
 --	local n = (m.uci:get("bird4", section, "type"))
@@ -183,32 +183,38 @@ type:value("recursive")
 type:value("multipath")
 
 valueVia = sect_routes:option(Value, "via", "Via", "")
+valueVia.optional = false
 valueVia:depends("type", "router")
 
-listVia = sect_routes:option(StaticList, "l_via", "Via", "")
+listVia = sect_routes:option(DynamicList, "l_via", "Via", "")
 listVia:depends("type", "multipath")
 listVia.optional=false
 
-tabVia = uciout:get_list("bird4", "route", "l_via")
-for _, v in ipairs(tabVia) do
-	listVia:value(v,v)
-end
---tableVia = uciout:get_list("bird4", "route", "via")
+--tab_via = uciout:get_list("bird4",sect_routes[".type"],"l_via")
+--for _, v in ipairs(tab_via) do
+--	listVia:value(v)
+--end
 
+
+--if type == "multipath" then
+--	tab_via = uciout:get_list("bird4",instance[".Name"],"l_via")
+--	for _, v in ipairs(tab_via) do
+--		listVia:value(v)
+--	end
+--end
 
 attribute = sect_routes:option(Value, "attribute", "Attribute", "Types are: unreachable, prohibit and blackhole")
 attribute:depends("type", "special")
 
-iwlist = uciout:get_all("wireless")
+--iwlist = uciout:get_all("wireless")
 
 iface  = sect_routes:option(ListValue, "iface", "Interface", "")
 iface:depends("type", "iface")
 
-for _, v in ipairs(iwlist) do
-	if v["type"] == "wifi-iface" then
-		iface:value("iface",v["name"])
-	end
-end
+uciout:foreach("wireless", "wifi-iface",
+	function(section)
+		iface:value(section[".name"])
+	end)
 
 ip =  sect_routes:option(Value, "ip", "IP address", "")
 ip:depends("type", "ip")
