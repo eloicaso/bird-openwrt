@@ -22,10 +22,6 @@ local uci = require "luci.model.uci"
 local uciout = uci.cursor()
 
 m=Map("bird4", "Bird4 general protocol's configuration")
-kernelNames={}
-deviceNames={}
-staticNames={}
-routeNames={}
 
 -- Optional parameters lists
 local protoptions = {
@@ -50,19 +46,9 @@ local routeroptions = {
 -- KERNEL PROTOCOL
 --
 
-
 sect_kernel_protos = m:section(TypedSection, "kernel", "Kernel options", "Configuration of the kernel protocols.")
 sect_kernel_protos.addremove = true
 sect_kernel_protos.anonymous = false
-
--- Set names of the protocols
-
-uciout:foreach('bird4', 'kernel', function (s)
-	local name = s[".name"]
-	if (name ~= nil) then
-		table.insert(kernelNames, name)
-	end
-end)
 
 -- Default kernel parameters
 
@@ -91,15 +77,6 @@ sect_device_protos = m:section(TypedSection, "device", "Device options", "Config
 sect_device_protos.addremove = true
 sect_device_protos.anonymous = false
 
--- Set names of the protocols
-
-uciout:foreach('bird4', 'device', function (s)
-    local name = s[".name"]
-	    if (name ~= nil) then
-			        table.insert(deviceNames, name)
-					    end
-						end)
-
 -- Default kernel parameters
 
 disabled = sect_device_protos:option(Flag, "disabled", "Disabled", "If this option is true, the protocol will not be configured.")
@@ -125,15 +102,6 @@ end
 sect_static_protos = m:section(TypedSection, "static", "Static options", "Configuration of the static protocols.")
 sect_static_protos.addremove = true
 sect_static_protos.anonymous = false
-
--- Set names of the protocols
-
-uciout:foreach('bird4', 'static', function (s)
-	local name = s[".name"]
-	if (name ~= nil) then
-		table.insert(staticNames, name)
-	end
-end)
 
 -- Default kernel parameters
 
@@ -162,16 +130,13 @@ sect_routes = m:section(TypedSection, "route", "Routes configuration", "Configur
 sect_routes.addremove = true
 sect_routes.anonymous = true
 
---sect_routes.sectiontitle = function (self, section)
---	local n = (m.uci:get("bird4", section, "type"))
---	return n.." route:"
---end
-
 instance = sect_routes:option(ListValue, "instance", "Route instance", "")
 i = 0
-for _,inst in ipairs(staticNames) do
-	instance:value("instance", inst)
-end
+
+uciout:foreach("bird4", "static",
+	function (s)
+		instance:value(s[".name"])
+	end)
 
 prefix = sect_routes:option(Value, "prefix", "Route prefix", "")
 
@@ -190,23 +155,8 @@ listVia = sect_routes:option(DynamicList, "l_via", "Via", "")
 listVia:depends("type", "multipath")
 listVia.optional=false
 
---tab_via = uciout:get_list("bird4",sect_routes[".type"],"l_via")
---for _, v in ipairs(tab_via) do
---	listVia:value(v)
---end
-
-
---if type == "multipath" then
---	tab_via = uciout:get_list("bird4",instance[".Name"],"l_via")
---	for _, v in ipairs(tab_via) do
---		listVia:value(v)
---	end
---end
-
 attribute = sect_routes:option(Value, "attribute", "Attribute", "Types are: unreachable, prohibit and blackhole")
 attribute:depends("type", "special")
-
---iwlist = uciout:get_all("wireless")
 
 iface  = sect_routes:option(ListValue, "iface", "Interface", "")
 iface:depends("type", "iface")
