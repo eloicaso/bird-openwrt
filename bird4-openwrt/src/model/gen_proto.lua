@@ -25,6 +25,7 @@ m=Map("bird4", "Bird4 general protocol's configuration")
 kernelNames={}
 deviceNames={}
 staticNames={}
+routeNames={}
 
 -- Optional parameters lists
 local protoptions = {
@@ -156,14 +157,61 @@ end
 -- ROUTES FOR STATIC PROTOCOL
 --
 
-sect_routes = m:section(TypedSection, "routes", "Routes configuration", "Configuration of the routes used in static protocols.")
+
+sect_routes = m:section(TypedSection, "route", "Routes configuration", "Configuration of the routes used in static protocols.")
 sect_routes.addremove = true
 sect_routes.anonymous = false
 
---uciout:foreach('bird4', 'route', function(s)
---		if  then
---	end
---end)
+--sect_routes.sectiontitle = function (self, section)
+--	local n = (m.uci:get("bird4", section, "type"))
+--	return n.." route:"
+--end
+
+instance = sect_routes:option(ListValue, "instance", "Route instance", "")
+i = 0
+for _,inst in ipairs(staticNames) do
+	instance:value("instance", inst)
+end
+
+prefix = sect_routes:option(Value, "prefix", "Route prefix", "")
+
+type = sect_routes:option(ListValue, "type", "Type of route", "")
+type:value("router")
+type:value("special")
+type:value("iface")
+type:value("recursive")
+type:value("multipath")
+
+valueVia = sect_routes:option(Value, "via", "Via", "")
+valueVia:depends("type", "router")
+
+listVia = sect_routes:option(StaticList, "l_via", "Via", "")
+listVia:depends("type", "multipath")
+listVia.optional=false
+
+tabVia = uciout:get_list("bird4", "route", "l_via")
+for _, v in ipairs(tabVia) do
+	listVia:value(v,v)
+end
+--tableVia = uciout:get_list("bird4", "route", "via")
+
+
+attribute = sect_routes:option(Value, "attribute", "Attribute", "Types are: unreachable, prohibit and blackhole")
+attribute:depends("type", "special")
+
+iwlist = uciout:get_all("wireless")
+
+iface  = sect_routes:option(ListValue, "iface", "Interface", "")
+iface:depends("type", "iface")
+
+for _, v in ipairs(iwlist) do
+	if v["type"] == "wifi-iface" then
+		iface:value("iface",v["name"])
+	end
+end
+
+ip =  sect_routes:option(Value, "ip", "IP address", "")
+ip:depends("type", "ip")
 
 function m.on_commit(self,map)
         luci.sys.call('/etc/init.d/bird4 stop; /etc/init.d/bird4 start')

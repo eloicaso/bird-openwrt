@@ -93,5 +93,5 @@ config route
         option instance 'static1'
         option type 'multipath'
         option prefix '192.168.30.0/24'
-        list via '172.16.1.5'
-        list via '172.16.1.6'
+        list l_via '172.16.1.5'
+        list l_via '172.16.1.6'
