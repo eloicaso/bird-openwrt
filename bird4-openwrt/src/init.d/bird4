@@ -233,7 +233,7 @@ prepare_bgp_filters() {
 	if [ -e "$file_path" ]; then
 		local filter_content=`cat $file_path`
 		if [ -n "$type" -a "$type" = "bgp" ]; then
-			writeToConfig "#Filter $1:"
+			writeToConfig "#Filter $section:"
 			writeToConfig "${filter_content}"
 			writeToConfig " "
 		fi

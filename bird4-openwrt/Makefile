@@ -18,6 +18,7 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
+#PKG_MD5:=7624d7e5413999851c6815d4394e64a3
 PKG_NAME:=bird4-openwrt
 PKG_RELEASE:=0.1
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
@@ -25,13 +26,12 @@ PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 include $(INCLUDE_DIR)/package.mk
 
 define Package/$(PKG_NAME)
-	TITLE:=UCI and LUCI Bird4 integration
-	SECTION:=net
-	CATEGORY:=Base system
-	MAINTAINER:= Eloi Carbo <eloicaso@gmail.com>
-	URL:=https://github.com/eloicaso/bird-openwrt
-	DEPENDS:= \
-	+bird4 +libuci +luci +luci-base +luci-mod-admin-full +uci +libuci-lua
+  TITLE:=UCI and LUCI Bird4 integration
+  SECTION:=net
+  CATEGORY:=Network
+  MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
+  URL:=https://github.com/eloicaso/bird4-openwrt/
+  DEPENDS:=+bird4 +libuci +luci +luci-base +luci-mod-admin-full +uci +libuci-lua
 endef
 
 define Package/$(PKG_NAME)/description
@@ -40,11 +40,6 @@ endef
 
 define Package/$(PKG_NAME)/conffiles
 	/etc/config/bird4
-endef
-
-define Build/Prepare
-	@rm -rf $(PKG_BUILD_DIR) || true
-	mkdir -p $(PKG_BUILD_DIR)
 endef
 
 define Build/Configure
@@ -56,10 +51,10 @@ endef
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/bird4
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/bird4/
 	$(INSTALL_BIN) ./src/init.d/bird4 $(1)/etc/init.d/bird4
-	$(CP) ./src/config/bird4 $(1)/etc/config/bird4
+	$(CP) ./src/config/bird4 $(1)/etc/config/
 	$(CP) ./src/model/* $(1)/usr/lib/lua/luci/model/cbi/bird4/
 	$(CP) ./src/controller/* $(1)/usr/lib/lua/luci/controller/
 endef
