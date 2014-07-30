@@ -1,6 +1,3 @@
-##############################################################
-#                    BIRD CONFIGURATION                      #
-##############################################################
 config bird 'bird'
     option use_UCI_config '1'
         #Caution! Enabling this option, Bird will translate this
@@ -9,24 +6,15 @@ config bird 'bird'
         #If you enable useUCIconfig, UCIconfigFile will be Bird's
         #configuration file location.
 
-##############################################################
-#                   GLOBAL CONFIGURATION                      #
-##############################################################
 config global 'global'
     option log_file '/tmp/bird.log'
     option log 'all'
     option debug 'off'
     option router_id '172.16.1.6'
 
-##############################################################
-#                   TABLE CONFIGURATION                      #
-##############################################################
 config table
     option name 'aux'
     
-##############################################################
-#                   BASIC CONFIGURATION                      #
-##############################################################
 config kernel kernel1
         option table 'aux'
         option import 'all'
@@ -50,9 +38,6 @@ config bgp bgp1
     option neighbor_address '172.16.1.5'
     option neighbor_as '65530'
 
-##############################################################
-#                    PROTOCOL TEMPLATES                      #
-##############################################################
 config bgp_template bgp_common
     option table 'aux'
     option import 'all'
@@ -61,10 +46,6 @@ config bgp_template bgp_common
     option local_as '65001'
     option disabled '0'
 
-
-##############################################################
-#                   ROUTES CONFIGURATION                     #
-##############################################################
 config route
         option instance 'static1'
         option type 'router'
@@ -95,3 +76,8 @@ config route
         option prefix '192.168.30.0/24'
         list l_via '172.16.1.5'
         list l_via '172.16.1.6'
+
+config filter 'firstFilter'
+	option type 'bgp'
+	option instance 'bgp1'
+	option file_path '/var/filters/f1'

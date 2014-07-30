@@ -23,10 +23,6 @@ local uciout = uci.cursor()
 
 m=Map("bird4", "Bird4 BGP protocol's configuration")
 
-
---
--- BGP Templates
---
 tab_templates = {}
 uciout:foreach('bird4', 'bgp_template', function (s)
 	local name = s[".name"]
@@ -35,6 +31,7 @@ uciout:foreach('bird4', 'bgp_template', function (s)
 	end
 end)
 
+-- Section BGP Templates
 
 sect_templates = m:section(TypedSection, "bgp_template", "BGP Templates", "Configuration of the templates used in BGP instances.")
 sect_templates.addremove = true
@@ -53,16 +50,18 @@ local_address.optional=true
 local_as = sect_templates:option(Value, "local_as", "Local AS", "")
 local_as.optional=true
 
+-- Section BGP Instances:
+
 sect_instances = m:section(TypedSection, "bgp", "BGP Instances", "Configuration of the BGP protocol instances")
 sect_instances.addremove = true
 sect_instances.anonymous = false
 
 templates = sect_instances:option(ListValue, "template", "Templates", "Available BGP templates")
 
-for _, v in ipairs(tab_templates) do
-	templates:value("template", v)
-end
-
+uciout:foreach("bird4", "bgp_template",
+	function(s)
+		templates:value(s[".name"])
+	end)
 
 neighbor_address = sect_instances:option(Value, "neighbor_address", "Neighbor IP Address", "")
 neighbor_as = sect_instances:option(Value, "neighbor_as", "Neighbor AS", "")
@@ -81,7 +80,26 @@ local_address.optional=true
 local_as = sect_instances:option(Value, "local_as", "Local AS", "")
 local_as.optional=true
 
+-- Section BGP Filters
 
+sect_filters = m:section(TypedSection, "filter", "BGP Filters", "Filters of the BGP instances")
+sect_filters.addremove = true
+sect_filters.anonymous = false
+sect_filters:depends("type", "bgp")
+
+instance = sect_filters:option(ListValue, "instance", "BGP instance", "Filter's BGP instance")
+instance:depends("type", "bgp")
+
+uciout:foreach("bird4", "bgp",
+	function (s)
+		instance:value(s[".name"])
+	end)
+
+type = sect_filters:option(Value, "type", "Filter type", "")
+type.default = "bgp"
+
+path = sect_filters:option(Value, "file_path", "Filter's file path", "Path to the Filter's file")
+path:depends("type", "bgp")
 
 function m.on_commit(self,map)
         luci.sys.call('/etc/init.d/bird4 stop; /etc/init.d/bird4 start')

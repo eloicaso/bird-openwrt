@@ -224,6 +224,22 @@ prepare_bgp() {
 	writeToConfig " "
 }
 
+prepare_bgp_filters() {
+	local section="$1"
+	local type
+	local file_path 
+	get type $section
+	get file_path $section
+	if [ -e "$file_path" ]; then
+		local filter_content=`cat $file_path`
+		if [ -n "$type" -a "$type" = "bgp" ]; then
+			writeToConfig "#Filter $1:"
+			writeToConfig "${filter_content}"
+			writeToConfig " "
+		fi
+	fi
+}
+
 start() {
 	config_load bird4
 	local use_UCI_config
@@ -246,6 +262,7 @@ start() {
 		#Setup the protocols configuration (currently BGP only)
 		config_foreach prepare_bgp_template 'bgp_template'
 		config_foreach prepare_bgp 'bgp'
+		config_foreach prepare_bgp_filters 'filter'
 
 		#Start the service
 		service_start $BIRD_BIN -d -c $BIRD_CONFIG -P $SERVICE_PID_FILE

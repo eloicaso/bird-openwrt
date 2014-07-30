@@ -35,7 +35,7 @@ define Package/$(PKG_NAME)
 endef
 
 define Package/$(PKG_NAME)/description
-   		Integration of Bird4 with OpenWRT (UCI+LUCI)
+	Integration of Bird4 with OpenWRT (UCI+LUCI)
 endef
 
 define Package/$(PKG_NAME)/conffiles
@@ -59,9 +59,9 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/bird4
 	$(INSTALL_BIN) ./src/init.d/bird4 $(1)/etc/init.d/bird4
-	$(INSTALL_DATA) ./src/config/bird4 $(1)/etc/config/bird4
-	$(CP) $(PKG_BUILD_DIR)/model/{b_gen_proto.lua,bird4.lua} $(1)/usr/lib/lua/luci/model/cbi/bird4/
-	$(INSTALL_DATA) ./src/controller/bird4.lua $(1)/usr/lib/lua/luci/controller/
+	$(CP) ./src/config/bird4 $(1)/etc/config/bird4
+	$(CP) ./src/model/* $(1)/usr/lib/lua/luci/model/cbi/bird4/
+	$(CP) ./src/controller/* $(1)/usr/lib/lua/luci/controller/
 endef
 
 $(eval $(call BuildPackage,$(PKG_NAME)))

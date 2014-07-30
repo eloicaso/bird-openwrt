@@ -150,10 +150,12 @@ type:value("multipath")
 valueVia = sect_routes:option(Value, "via", "Via", "")
 valueVia.optional = false
 valueVia:depends("type", "router")
+valueVia.datatype = "ip4addr"
 
 listVia = sect_routes:option(DynamicList, "l_via", "Via", "")
 listVia:depends("type", "multipath")
 listVia.optional=false
+listVia.datatype = "ip4addr"
 
 attribute = sect_routes:option(Value, "attribute", "Attribute", "Types are: unreachable, prohibit and blackhole")
 attribute:depends("type", "special")
@@ -168,6 +170,7 @@ uciout:foreach("wireless", "wifi-iface",
 
 ip =  sect_routes:option(Value, "ip", "IP address", "")
 ip:depends("type", "ip")
+ip.datatype = [[ or"ip4addr", "ip6addr" ]]
 
 function m.on_commit(self,map)
         luci.sys.call('/etc/init.d/bird4 stop; /etc/init.d/bird4 start')
