@@ -39,8 +39,14 @@ sect_templates.anonymous = false
 
 disabled = sect_templates:option(Flag, "disabled", "Disabled", "Enable/Disable BGP Protocol")
 disabled.optional=true
-table = sect_templates:option(Value, "table", "Table", "Set the table used for BGP Routing")
+table = sect_templates:option(ListValue, "table", "Table", "Set the table used for BGP Routing")
 table.optional=true
+uciout:foreach("bird4", "table",
+	function (s)
+		table:value(s.name)
+	end)
+table:value("")
+
 import = sect_templates:option(Value, "import", "Import","")
 import.optional=true
 export = sect_templates:option(Value, "export", "Export", "")
@@ -62,15 +68,21 @@ uciout:foreach("bird4", "bgp_template",
 	function(s)
 		templates:value(s[".name"])
 	end)
-
+templates:value("")
 neighbor_address = sect_instances:option(Value, "neighbor_address", "Neighbor IP Address", "")
 neighbor_as = sect_instances:option(Value, "neighbor_as", "Neighbor AS", "")
 
 disabled = sect_instances:option(Flag, "disabled", "Disabled", "Enable/Disable BGP Protocol")
 disabled.optional=true
 disabled.default=nil
-table = sect_instances:option(Value, "table", "Table", "Set the table used for BGP Routing")
+table = sect_instances:option(ListValue, "table", "Table", "Set the table used for BGP Routing")
 table.optional=true
+uciout:foreach("bird4", "table",
+    function (s)
+	        table:value(s.name)
+			    end)
+table:value("")
+
 import = sect_instances:option(Value, "import", "Import","")
 import.optional=true
 export = sect_instances:option(Value, "export", "Export", "")

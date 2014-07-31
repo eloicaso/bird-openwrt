@@ -21,7 +21,7 @@ local http = require "luci.http"
 local uci = require "luci.model.uci"
 local uciout = uci.cursor()
 
-m=Map("bird4", "Bird4 general protocol's configuration")
+m=Map("bird4", "Bird4 general protocol's configuration.")
 
 -- Optional parameters lists
 local protoptions = {
@@ -46,7 +46,7 @@ local routeroptions = {
 -- KERNEL PROTOCOL
 --
 
-sect_kernel_protos = m:section(TypedSection, "kernel", "Kernel options", "Configuration of the kernel protocols.")
+sect_kernel_protos = m:section(TypedSection, "kernel", "Kernel options", "Configuration of the kernel protocols. First Instance MUST be Primary table (no table or kernel_table fields).")
 sect_kernel_protos.addremove = true
 sect_kernel_protos.anonymous = false
 
@@ -60,7 +60,18 @@ for _,o in ipairs(protoptions) do
 	if o.name ~= nil then
 		for _, d in ipairs(o.depends) do
 			if d == "kernel" then
-				value = sect_kernel_protos:option(Value, o.name, translate(o.name), translate(o.help))
+				if o.name == "learn" or o.name == "persist" then
+					value = sect_kernel_protos:option(Flag, o.name, translate(o.name), translate(o.help))
+				elseif o.name == "table" then 
+					value = sect_kernel_protos:option(ListValue, o.name, translate(o.name), translate(o.help))
+					uciout:foreach("bird4", "table",
+						function (s)
+							value:value(s.name)
+						end)
+					value:value("")
+				else
+					value = sect_kernel_protos:option(Value, o.name, translate(o.name), translate(o.help))
+				end
 				value.optional = true
 				value.rmempty = true
 			end
@@ -113,9 +124,18 @@ for _,o in ipairs(protoptions) do
 	if o.name ~= nil then
 		for _, d in ipairs(o.depends) do
 			if d == "static" then
-				value = sect_static_protos:option(Value, o.name, translate(o.name), translate(o.help))
-				value.optional = true
-				value.rmempty = true
+				if o.name == "table" then
+					value = sect_static_protos:option(ListValue, o.name, translate(o.name), translate(o.help))
+					uciout:foreach("bird4", "table",
+						function (s)
+							value:value(s.name)
+						end)
+					value:value("")
+				else
+					value = sect_static_protos:option(Value, o.name, translate(o.name), translate(o.help))
+				end
+					value.optional = true
+					value.rmempty = true
 			end
 		end
 	end
