@@ -113,8 +113,8 @@ prepare_routes() {
 			"multipath")
 				get prefix $section
 				write "    route $prefix multipath" $prefix
-				config_list_foreach $section via multipath_list
-				writeToConfig "          ;"
+				config_list_foreach $section l_via multipath_list
+				writeToConfig "        ;"
 				;;
 		esac
 	fi

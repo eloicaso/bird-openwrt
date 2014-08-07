@@ -18,7 +18,6 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
-#PKG_MD5:=723c41441f69ac65d56c6a6d50ac6b91
 PKG_NAME:=bird4-openwrt
 PKG_RELEASE:=0.1
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
