@@ -76,7 +76,7 @@ listen_addr.optional = true
 listen_port = s_bird_global:option(Value, "listen_bgp_port", "BGP Port", "Set the port that BGP will listen to.")
 listen_port.optional = true
 
-listen_dual = s_bird_global:option(Flag, "listen_bgp_dual", "BGP Dual/ipv6", "Set if BGP connections will listen ipv6 only "ipv6only" or both ipv4/6 "dual" routes")
+listen_dual = s_bird_global:option(Flag, "listen_bgp_dual", "BGP Dual/ipv6", "Set if BGP connections will listen ipv6 only 'ipv6only' or both ipv4/6 'dual' routes")
 listen_dual.optional = true
 
 
