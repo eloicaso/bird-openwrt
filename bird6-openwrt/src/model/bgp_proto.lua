@@ -51,6 +51,64 @@ import = sect_templates:option(Value, "import", "Import","")
 import.optional=true
 export = sect_templates:option(Value, "export", "Export", "")
 export.optional=true
+
+source_addr = sect_templates:option(Value, "source_address", "Source Address", "Source address for BGP routing. By default uses Router ID")
+source_addr.optional = true
+
+description = sect_templates:option(TextValue, "description", "Description", "Description of the current BGP instance")
+description.optional = true
+
+next_hop_self = sect_templates:option(Flag, "next_hop_self", "Next hop self", "Avoid next hop calculation and advertise own source address as next hop")
+next_hop_self.default = nil
+next_hop_self.optional = true
+
+next_hop_keep = sect_templates:option(Flag, "next_hop_keep", "Next hop keep", "Forward the received Next Hop attribute event in situations where the local address should be used instead, like subneting")
+next_hop_keep.default = nil
+next_hop_keep.optional = true
+
+rr_client = sect_templates:option(Flag, "rr_client", "Route Reflector server", "This router serves as a Route Reflector server and treats neighbors as clients")
+rr_client.default = nil
+rr_client.optional = true
+
+rr_cluster_id = sect_templates:option(Value, "rr_cluster_id", "Route Reflector Cluster ID", "Identificator of the RR cluster. By default uses the Router ID")
+rr_cluster_id.optional = true
+
+import_limit = sect_templates:option(Value, "import_limit", "Routes import limit", "Specify an import route limit. By default is disabled '0'")
+import_limit.default= "0"
+import_limit.optional = true
+
+import_limit_action = sect_templates:option(ListValue, "import_limit_action", "Routes import limit action", "Action to take when import routes limit ir reached")
+import_limit_action:value("warn")
+import_limit_action:value("block")
+import_limit_action:value("disable")
+import_limit_action:value("restart")
+import_limit_action.default = "warn"
+import_limit_action.optional = true
+
+export_limit = sect_templates:option(Value, "export_limit", "Routes export limit", "Specify an export route limit. By default is disabled '0'")
+export_limit.default="0"
+export_limit.optional = true
+
+export_limit_action = sect_templates:option(ListValue, "export_limit_action", "Routes export limit action", "Action to take when export routes limit is reached")
+export_limit_action:value("warn")
+export_limit_action:value("block")
+export_limit_action:value("disable")
+export_limit_action:value("restart")
+export_limit_action.default = "warn"
+export_limit_action.optional = true
+
+receive_limit = sect_templates:option(Value, "receive_limit", "Routes received limit", "Specify a received route limit. By default is disabled '0'")
+receive_limit.default="0"
+receive_limit.optional = true
+
+receive_limit_action = sect_templates:option(ListValue, "receive_limit_action", "Routes received limit action", "Action to take when received routes limit is reached")
+receive_limit_action:value("warn")
+receive_limit_action:value("block")
+receive_limit_action:value("disable")
+receive_limit_action:value("restart")
+receive_limit_action.default = "warn"
+receive_limit_action.optional = true
+
 local_address = sect_templates:option(Value, "local_address", "Local BGP address", "")
 local_address.optional=true
 local_as = sect_templates:option(Value, "local_as", "Local AS", "")
@@ -83,14 +141,72 @@ uciout:foreach("bird6", "table",
 			    end)
 table:value("")
 
+description = sect_instances:option(TextValue, "description", "Description", "Description of the current BGP instance")
+description.optional = true
+
 import = sect_instances:option(Value, "import", "Import","")
 import.optional=true
 export = sect_instances:option(Value, "export", "Export", "")
 export.optional=true
+
+source_addr = sect_instances:option(Value, "source_address", "Source Address", "Source address for BGP routing. By default uses Router ID")
+source_addr.optional = true
+
 local_address = sect_instances:option(Value, "local_address", "Local BGP address", "")
 local_address.optional=true
 local_as = sect_instances:option(Value, "local_as", "Local AS", "")
 local_as.optional=true
+
+next_hop_self = sect_instances:option(Flag, "next_hop_self", "Next hop self", "Avoid next hop calculation and advertise own source address as next hop")
+next_hop_self.default = nil
+next_hop_self.optional = true
+
+next_hop_keep = sect_instances:option(Flag, "next_hop_keep", "Next hop keep", "Forward the received Next Hop attribute event in situations where the local address should be used instead, like subneting")
+next_hop_keep.default = nil
+next_hop_keep.optional = true
+
+rr_client = sect_instances:option(Flag, "rr_client", "Route Reflector server", "This router serves as a Route Reflector server and treats neighbors as clients")
+rr_client.default = nil
+rr_client.optional = true
+
+rr_cluster_id = sect_instances:option(Value, "rr_cluster_id", "Route Reflector Cluster ID", "Identificator of the RR cluster. By default uses the Router ID")
+rr_cluster_id.optional = true
+
+import_limit = sect_instances:option(Value, "import_limit", "Routes import limit", "Specify an import route limit. By default is disabled '0'")
+import_limit.default="0"
+import_limit.optional = true
+
+import_limit_action = sect_instances:option(ListValue, "import_limit_action", "Routes import limit action", "Action to take when import routes limit ir reached")
+import_limit_action:value("warn")
+import_limit_action:value("block")
+import_limit_action:value("disable")
+import_limit_action:value("restart")
+import_limit_action.default = "warn"
+import_limit_action.optional = true
+
+export_limit = sect_instances:option(Value, "export_limit", "Routes export limit", "Specify an export route limit. By default is disabled '0'")
+export_limit.default="0"
+export_limit.optional = true
+
+export_limit_action = sect_instances:option(ListValue, "export_limit_action", "Routes export limit action", "Action to take when export routes limit is reached")
+export_limit_action:value("warn")
+export_limit_action:value("block")
+export_limit_action:value("disable")
+export_limit_action:value("restart")
+export_limit_action.default = "warn"
+export_limit_action.optional = true
+
+receive_limit = sect_instances:option(Value, "receive_limit", "Routes received limit", "Specify a received route limit. By default is disabled '0'")
+receive_limit.default="0"
+receive_limit.optional = true
+
+receive_limit_action = sect_instances:option(ListValue, "receive_limit_action", "Routes received limit action", "Action to take when received routes limit is reached")
+receive_limit_action:value("warn")
+receive_limit_action:value("block")
+receive_limit_action:value("disable")
+receive_limit_action:value("restart")
+receive_limit_action.default = "warn"
+receive_limit_action.optional = true
 
 -- Section BGP Filters
 
