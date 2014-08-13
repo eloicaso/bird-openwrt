@@ -18,7 +18,8 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
-PKG_NAME:=bird4-openwrt
+BIRD:=bird4
+PKG_NAME:=$(BIRD)-openwrt
 PKG_RELEASE:=0.1
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 
@@ -38,7 +39,7 @@ define Package/$(PKG_NAME)/description
 endef
 
 define Package/$(PKG_NAME)/conffiles
-	/etc/config/bird4
+	/etc/config/$(BIRD)
 endef
 
 define Build/Configure
@@ -47,15 +48,28 @@ endef
 define Build/Compile
 endef
 
+define Package/$(PKG_NAME)/preinst
+#!/bin/sh
+echo "Creating a backup of /etc/init.d/$(BIRD) in /etc/init.d/$(BIRD).bak"
+[ -e /etc/init.d/$(BIRD) ] && mv /etc/init.d/$(BIRD) /etc/init.d/$(BIRD).bak
+endef
+
+
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/bird4/
-	$(INSTALL_BIN) ./src/init.d/bird4 $(1)/etc/init.d/bird4
-	$(CP) ./src/config/bird4 $(1)/etc/config/
-	$(CP) ./src/model/* $(1)/usr/lib/lua/luci/model/cbi/bird4/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
+	$(INSTALL_BIN) ./src/init.d/$(BIRD) $(1)/etc/init.d/
+	$(CP) ./src/config/$(BIRD) $(1)/etc/config/
+	$(CP) ./src/model/* $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
 	$(CP) ./src/controller/* $(1)/usr/lib/lua/luci/controller/
+endef
+
+define Package/$(PKG_NAME)/prerm
+#!/bin/sh
+echo "Restoring file: /etc/init.d/$(BIRD)."
+[ -e /etc/init.d/$(BIRD) ] && mv /etc/init.d/$(BIRD).bak /etc/init.d/$(BIRD)
 endef
 
 $(eval $(call BuildPackage,$(PKG_NAME)))
