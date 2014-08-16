@@ -29,38 +29,78 @@ SERVICE_PID_FILE="/var/run/$BIRD.pid"
 
 BIRD_BIN="/usr/sbin/$BIRD"
 
+
+# Function: writeToConfig $1
+# $1 string.
+# Allows to write in the $BIRD_CONFIG file, the string $1. This function does not check the $1 string.
+# Example: writeToConfig "value: $N"
 writeToConfig() {
     echo "$1" >> $BIRD_CONFIG
 }
 
+# Function: write $1 $2
+# $1 string. $2 string.
+# This function checks if $2 is empty. If not, it writes the string $1 in the $BIRD_CONFIG file.
+# Use write function to check if $1, value found inside $2, is not empty and can be written in the configuration file.
+# Example: 
+N=""; write "value: $N" $N; 
 write() {
     [ -n "$2" ] && writeToConfig "$1"
 }
 
-
+#Function: write_bool $1 $2
+# $1 string; $2 boolean
+# This function checks if $2 is true or false and write the $1 string into $BIRD_CONFIG file.
+# The function writes a # before the $2 string if its false.
+# Example: local N=0; write_bool $N
 write_bool() {
     [ "$2" == 0 ] && writeToConfig "#   $1;" || writeToConfig "    $1;"
 }
-#The name of the variable and the requested configuration must be the same
+
+# Function: get $1 $2
+# $1 string. $2 string
+# This function uses the external UCI function "config_get $result $section $option" to obtain a string value from UCI config file.
+# To use this function, use the same name of the UCI option for the variable.
+# Example: UCI (option id 'abcd'); local id; get id $section
 get() {
     config_get $1 $2 $1
 }
 
+# Function: get_bool $1 $2
+# $1 boolean. $2 string
+# This function uses the external UCI function "config_get_bool $result $section $option" to obtain a boolean value from UCI config file.
+# To use this function, use the same name of the UCI option for the variable $1.
+# Example: UCI (option use_ipv6 '1'); local use_ipv6; get use_ipv6 $section
 get_bool() {
     config_get_bool $1 $2 $1
 }
 
+# Function: multipath_list $1
+# $1 string
+# This function writes the $1 string in the multipath routes.
+multipath_list() {
+    write "          via $1" $1
+}
+
+# Function: prepare_tables $1
+# $1 string
+# This function gets each "table" section in the UCI configuration and sets each option in the bird6.conf file.
+# $1 is set as the ID of the current UCI table section
 prepare_tables() {
     local section="$1"; local name
     get name $section
     write "table $name;" $name
 }
 
+# Function: prepare_global $1
+# $1 string
+# This function gets each "global" section in the UCI configuration and sets each option in the bird6.conf file.
+# $1 is set as the ID of the current UCI global section. prepare_global is the first configuration set in the bird6.conf and removes the old file.
 prepare_global () {
     local section="$1"
     local log_file; local log; local debug; local router_id; local table; local listen_bgp_addr; local listen_bgp_port; local listen_bgp_dual
 
-    # REMOVE OLD CONFIGURATION
+    # Remove old configuration file
     rm -f "$BIRD_CONFIG"
 	
     get log_file $section
@@ -71,6 +111,8 @@ prepare_global () {
     get listen_bgp_addr $section
     get listen_bgp_port $section
     get listen_bgp_dual $section
+    
+    # First line of the NEW configuration file
     echo "#Bird6 configuration using UCI:" > $BIRD_CONFIG
     writeToConfig " "
     [ -n "$log_file" -a -n "$log" ] && writeToConfig 'log "'$log_file'" '$log';'
@@ -89,11 +131,10 @@ prepare_global () {
     writeToConfig " "
 }
 
-
-multipath_list() {
-    write "          via $1" $1
-}
-
+# Function: prepare_routes $1
+# $1 string
+# This function gets each "route" section in the UCI configuration and sets each option in the bird6.conf file.
+# $1 is set as the ID of the current UCI route section. Each type of route has its own treatment.
 prepare_routes() {
     local instance; local prefix; local via; local type
     local section="$1"
@@ -128,6 +169,10 @@ prepare_routes() {
     fi
 }
 
+# Function: prepare_kernel $1
+# $1 string
+# This function gets each "kernel" protocol section in the UCI configuration and sets each option in the bird6.conf file.
+# $1 is set as the ID of the current UCI kernel section.
 prepare_kernel() {
     local section="$1"
     write "#$section configuration:" $section
@@ -153,6 +198,10 @@ prepare_kernel() {
     writeToConfig " "
 }
 
+# Function: prepare_static $1
+# $1 string
+# This function gets each "static" protocol section in the UCI configuration and sets each option in the bird6.conf file.
+# $1 is set as the ID of the current UCI static section.
 prepare_static() {
     local section="$1"
     local disabled
@@ -169,6 +218,10 @@ prepare_static() {
     fi
 }
 
+# Function: prepare_device $1
+# $1 string
+# This function gets each "device" protocol section in the UCI configuration and sets each option in the bird6.conf file.
+# $1 is set as the ID of the current UCI device section.
 prepare_device() {
     local section="$1"	
     local disabled; local scan_time
@@ -182,6 +235,11 @@ prepare_device() {
     writeToConfig " "
 }
 
+# Function: prepare_bgp_template $1
+# $1 string
+# This function gets each "bgp_template" protocol section in the UCI configuration and sets each option in the bird6.conf file.
+# $1 is set as the ID of the current UCI bgp_template section.
+# Careful! Template options will be replaced by "instance" options if there is any match.
 prepare_bgp_template() {
     local section="$1"
     local disabled; local table; local import; local export; local local_address; local local_as; local neighbor_address; local neighbor_as; local source_address; local next_hop_self; local next_hop_keep; local rr_client; local rr_cluster_id; local import_limit; local import_limit_action; local export_limit; local export_limit_action; local receive_limit; local receive_limit_action
@@ -237,6 +295,11 @@ prepare_bgp_template() {
     writeToConfig " "
 }
 
+# Function: prepare_bgp $1
+# $1 string
+# This function gets each "bgp" protocol section in the UCI configuration and sets each option in the bird6.conf file.
+# $1 is set as the ID of the current UCI bgp section.
+# Careful! The options set in bgp instances overlap bgp_template ones.
 prepare_bgp() {
     local section="$1"
     local disabled; local table; local template; local description; local import; local export; local local_address; local local_as; local neighbor_address; local neighbor_as; local rr_client; local rr_cluster_id; local import_limit; local import_limit_action; local export_limit; local export_limit_action; local receive_limit; local receive_limit_action
@@ -258,6 +321,7 @@ prepare_bgp() {
     get receive_limit_action $section
     get neighbor_address $section
     get neighbor_as $section
+    
     writeToConfig "#$section configuration:"
     [ -n "$template" ] && writeToConfig "protocol bgp $section from $template {" || writeToConfig "protocol bgp $section {"
     [ -n "$disabled" ] && write_bool disabled $disabled
@@ -292,6 +356,11 @@ prepare_bgp() {
     writeToConfig " "
 }
 
+# Function: prepare_bgp_filters $1
+# $1 string
+# This function gets each "bgp_filter" protocol section in the UCI configuration and sets each option in the bird6.conf file.
+# $1 is set as the ID of the current UCI bgp_filter section.
+# This function checks if the filter file exists and, in that case, it writes its content to the configuration file.
 prepare_bgp_filters() {
     local section="$1"
     local type
@@ -307,6 +376,7 @@ prepare_bgp_filters() {
         fi
     fi
 }
+
 
 start() {
     config_load bird6
