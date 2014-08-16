@@ -325,7 +325,7 @@ config route
 --
 
 * instance: String
-This option indicates the static protocol instance the route will be applied for.
+This option indicates the route that the static protocol instance will apply.
 
 * type: String
 This option states the type of route that will be applied. Also defines the options available for it.
@@ -336,7 +336,7 @@ This option allows to define the network that you want to define.
 
 [router only]
 * via: IP Address
-This option indicates the IP address of the neighbor router where the routes will pass through
+This option indicates the IP address of the neighbor router where the routes will pass through.
 
 [special only]
 * attribute: String
@@ -354,6 +354,38 @@ This option states the IP address which the next hop will depend on.
 [multipath only][This is a list, not an option. Use it as in the example, or check the UCI configuration documentation.]
 * l_via: IP address
 This list of IPs specifies the list (following the sequence) of routers that the route will follow as next hops.
+
+
+
+CONFIGURATION SECTION 10: 'filter NAME' 
+Filters are written in separated files. Its syntax can be found in http://bird.network.cz/?get_doc&f=bird-5.html
+The content of each filter file is copied in the birdX.conf file without checking its syntax.
+
+Example
+--
+config filter 'firstFilter'
+    option type 'bgp'
+    option instance 'bgp1'
+    option file_path '/var/filters/f1'
+--
+
+* type: String
+The type indicates to which routing protocol is the filter directed to. Currently only BGP is available.
+
+* instance: String
+This option indicates the filter that the routing protocol instance will apply.
+
+* file_path: String (File path)
+This option specifies the path to the filter file to be used in the routing protocol.
+
+
+
+
+
+
+
+
+
 
 
 
