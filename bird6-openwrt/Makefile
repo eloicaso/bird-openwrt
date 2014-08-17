@@ -20,56 +20,70 @@ include $(INCLUDE_DIR)/kernel.mk
 
 BIRD:=bird6
 PKG_NAME:=$(BIRD)-openwrt
-PKG_RELEASE:=0.1
+PKG_RELEASE:=0.2
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
+uci:=$(BIRD)-uci
+luci:=$(BIRD)-luci
+
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/$(PKG_NAME)
-  TITLE:=UCI and LUCI Bird6 integration
+define Build/Prepare
+endef
+define Build/Compile
+endef
+
+define Package/$(uci)
+  TITLE:=UCI $(BIRD) configuration
   SECTION:=net
   CATEGORY:=Network
   MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
   URL:=https://github.com/eloicaso/bird6-openwrt/
-  DEPENDS:=+bird6 +libuci +luci +luci-base +luci-mod-admin-full +uci +libuci-lua
+  DEPENDS:=+$(BIRD) +libuci +uci
 endef
 
-define Package/$(PKG_NAME)/description
-	Integration of Bird6 with OpenWRT (UCI+LUCI)
+define Package/$(uci)/description
+UCI integration of $(BIRD) with OpenWRT
 endef
 
-define Package/$(PKG_NAME)/conffiles
-	/etc/config/$(BIRD)
-endef
-
-define Build/Configure
-endef
-
-define Build/Compile
-endef
-
-define Package/$(PKG_NAME)/preinst
-#!/bin/sh
-echo "Creating a backup of /etc/init.d/$(BIRD) in /etc/init.d/$(BIRD).bak"
-[ -e /etc/init.d/$(BIRD) ] && mv /etc/init.d/$(BIRD) /etc/init.d/$(BIRD).bak
-endef
-
-define Package/$(PKG_NAME)/install
-	$(INSTALL_DIR) $(1)/etc/init.d
+define Package/$(uci)/install
+	$(INSTALL_DIR) $(1)/etc/$(BIRD)/init.d
 	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_BIN) ./src/init.d/$(BIRD) $(1)/etc/$(BIRD)/init.d/
+	$(CP) ./src/uci-defaults/$(uci)-install-init.d $(1)/etc/$(BIRD)/init.d/
+	$(CP) ./src/config/$(BIRD) $(1)/etc/config/
+endef
+
+define Package/$(uci)/postinst
+#!/bin/sh
+if [ -z $${IPKG_INSTROOT} ]; then
+    ( . /etc/bird6/init.d/bird6-uci-install-init.d ) && rm -f /etc/bird6/init.d/bird6-uci-install-init.d
+fi
+endef
+
+
+$(eval $(call BuildPackage,$(uci)))
+
+
+
+define Package/$(luci)
+  TITLE:=LuCI $(BIRD) integration
+  SECTION:=net
+  CATEGORY:=Network
+  MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
+  URL:=https://github.com/eloicaso/bird6-openwrt/
+  DEPENDS:=+$(BIRD)-uci +luci +luci-base +luci-mod-admin-full +libuci-lua
+endef
+
+define Package/$(luci)/description
+LuCI integration of $(BIRD) with OpenWRT
+endef
+
+define Package/$(luci)/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
-	$(INSTALL_BIN) ./src/init.d/$(BIRD) $(1)/etc/init.d/$(BIRD)
-	$(CP) ./src/config/$(BIRD) $(1)/etc/config/
 	$(CP) ./src/model/* $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
 	$(CP) ./src/controller/* $(1)/usr/lib/lua/luci/controller/
 endef
 
-define Package/$(PKG_NAME)/prerm
-#!/bin/sh
-echo "Restoring file: /etc/init.d/$(BIRD)."
-[ -e /etc/init.d/$(BIRD) ] && mv /etc/init.d/$(BIRD).bak /etc/init.d/$(BIRD)
-endef
-
-
-$(eval $(call BuildPackage,$(PKG_NAME)))
+$(eval $(call BuildPackage,$(luci)))
