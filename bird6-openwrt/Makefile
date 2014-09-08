@@ -23,7 +23,7 @@ PKG_NAME:=$(BIRD)-openwrt
 PKG_RELEASE:=0.2
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 uci:=$(BIRD)-uci
-luci:=$(BIRD)-luci
+luci:=luci-app-$(BIRD)
 
 
 include $(INCLUDE_DIR)/package.mk
@@ -34,16 +34,17 @@ define Build/Compile
 endef
 
 define Package/$(uci)
-  TITLE:=UCI $(BIRD) configuration
+  TITLE:=$(BIRD) UCI
   SECTION:=net
   CATEGORY:=Network
+  SUBMENU:=Routing and Redirection
   MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
   URL:=https://github.com/eloicaso/bird6-openwrt/
   DEPENDS:=+$(BIRD) +libuci +uci
 endef
 
 define Package/$(uci)/description
-UCI integration of $(BIRD) with OpenWRT
+$(BIRD) UCI integration module
 endef
 
 define Package/$(uci)/install
@@ -67,16 +68,17 @@ $(eval $(call BuildPackage,$(uci)))
 
 
 define Package/$(luci)
-  TITLE:=LuCI $(BIRD) integration
-  SECTION:=net
-  CATEGORY:=Network
+  TITLE:=$(BIRD) LuCI
+  SECTION:=luci
+  CATEGORY:=LuCI
+  SUBMENU:=3. Applications
   MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
   URL:=https://github.com/eloicaso/bird6-openwrt/
-  DEPENDS:=+$(BIRD)-uci +luci +luci-base +luci-mod-admin-full +libuci-lua
+  DEPENDS:=+$(BIRD)-uci luci-base
 endef
 
 define Package/$(luci)/description
-LuCI integration of $(BIRD) with OpenWRT
+$(BIRD) application for LuCI
 endef
 
 define Package/$(luci)/install
