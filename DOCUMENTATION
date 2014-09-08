@@ -377,17 +377,3 @@ This option indicates the filter that the routing protocol instance will apply.
 
 * file_path: String (File path)
 This option specifies the path to the filter file to be used in the routing protocol.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
