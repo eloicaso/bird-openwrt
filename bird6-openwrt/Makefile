@@ -34,7 +34,7 @@ define Build/Compile
 endef
 
 define Package/$(uci)
-  TITLE:=$(BIRD) UCI
+  TITLE:=The BIRD UCI module
   SECTION:=net
   CATEGORY:=Network
   SUBMENU:=Routing and Redirection
@@ -68,13 +68,13 @@ $(eval $(call BuildPackage,$(uci)))
 
 
 define Package/$(luci)
-  TITLE:=$(BIRD) LuCI
+  TITLE:=LuCI support for $(BIRD)
   SECTION:=luci
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
   MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
   URL:=https://github.com/eloicaso/bird6-openwrt/
-  DEPENDS:=+$(BIRD)-uci luci-base
+  DEPENDS:=+$(BIRD)-uci +luci-base
 endef
 
 define Package/$(luci)/description
