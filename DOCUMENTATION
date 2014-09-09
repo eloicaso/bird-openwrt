@@ -21,9 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 "BGP/Bird integration with OpenWRT and QMP" project DOCUMENTATION
 
 *** Original documentation for BIRD Daemon can be found here: http://bird.network.cz/?get_doc
-*** Some interesting examples are placed in their Gitlab page: https://gitlab.labs.nic.cz/labs/bird/wikis/home
-*** If you want to add new options to bird4/6-openwrt package,
-*** feel free to make a pull request it in: https://github.com/eloicaso/bird4-openwrt or https://github.com/eloicaso/bird6-openwrt
+*** Some interesting examples are placed in BIRD daemon Gitlab page: https://gitlab.labs.nic.cz/labs/bird/wikis/home
+*** If you want to add new options to bird*-openwrt packages,
+*** feel free to make a pull request it in: https://github.com/eloicaso/bird-openwrt
 *** or email me and ask for it: eloicaso@openmailbox.org
 
 - Options used in /etc/config/birdX -
