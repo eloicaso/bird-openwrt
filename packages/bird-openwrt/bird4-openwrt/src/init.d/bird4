@@ -81,6 +81,20 @@ multipath_list() {
     write "          via $1" $1
 }
 
+# Function: range_list $1
+# $1 string
+# This function writes the $1 string in the OSPF networks.
+range_list(){
+    write "            $1;" $1
+}
+
+# Function: hidden_range_list $1
+# $1 string
+# This function writes the $1 string in the OSPF networks as hidden.
+hidden_range_list(){
+   write "            $1 hidden;" $1
+}
+
 # Function: prepare_tables $1
 # $1 string
 # This function gets each "table" section in the UCI configuration and sets each option in the bird4.conf file.
@@ -312,7 +326,7 @@ prepare_bgp() {
     get receive_limit_action $section
     get neighbor_address $section
     get neighbor_as $section
-    
+
     writeToConfig "#$section configuration:"
     [ -n "$template" ] && writeToConfig "protocol bgp $section from $template {" || writeToConfig "protocol bgp $section {"
     [ -n "$disabled" ] && write_bool disabled $disabled
@@ -351,11 +365,11 @@ prepare_bgp() {
 # $1 string
 # This function gets each "bgp_filter" protocol section in the UCI configuration and sets each option in the bird4.conf file.
 # $1 is set as the ID of the current UCI bgp_filter section.
-# This function checks if the filter file exists and, in that case, it writes its content to the configuration file.
+# This function checks if the filter file exists, if it meets protocol's type and, it writes its content to the configuration file.
 prepare_bgp_filters() {
     local section="$1"
     local type
-    local file_path 
+    local file_path
     get type $section
     get file_path $section
     if [ -e "$file_path" ]; then
@@ -367,6 +381,79 @@ prepare_bgp_filters() {
         fi
     fi
 }
+
+#Function: prepare_ospf_network $1
+# $1 string $2 string
+# This function gets each "ospf_network" protocol section in the UCI configuration, checks if its Area ID is the same as the one
+# being configurated and finally sets the list of network ranges to be propagated, or not, by the OSPF protocol
+# $1 is set as the ID of the action area of the internal networks.
+# $2 is set as the ID of the current area being configurated.
+prepare_ospf_networks() {
+    local section="$1"
+    local current_area="$2"
+    if [ "$section" = "$current_area" ]; then
+        writeToConfig "        networks {"
+        config_list_foreach $section range range_list
+        config_list_foreach $section hidden_range hidden_range_list
+        writeToConfig "        };"
+    fi
+}
+
+# Function: prepare_ospf_area $1
+
+prepare_ospf_area() {
+    local section="$1"
+    local instance; local stub; local default_cost
+    get instance $section
+    get stub $section
+    get default_cost $section
+    writeToConfig "    area $section {"
+    if [ -n "$instance" -a "$instance" = "$section" ]; then
+        [ -n "$stub" -a "$stub" = "1" ] && writeToConfig "        stub yes;"
+        [ -n "$default_cost" ] && writeToConfig "        default cost $default_cost;"
+        config_foreach prepare_ospf_networks "ospf_networks" $section
+        config_foreach prepare_ospf_interface "ospf_interface"
+        writeToConfig "    };"
+    fi
+}
+
+# Function: prepare_ospf_instance $1
+# $1 string
+# This function gets each "ospf_area" protocol section in the UCI configuration and sets each option in the bird4.conf file.
+# $1 is set as the ID of the current UCI ospf_area section.
+prepare_ospf_instance() {
+    local section="$1"
+    local cfg1583compat; local tick
+    get cfg1583compat $section
+    get tick $section
+    writeToConfig "protocol ospf $section {"
+    [ -e "$cfg1583compat" ] && write_bool cfg1583compat $cfg1583compat
+    [ -e "$tick" ] && write_bool tick $tick
+    config_foreach prepare_ospf_area 'ospf_area'
+    writeToConfig "}"
+}
+
+# Function: prepare_ospf_filters $1
+# $1 string
+# This function gets each "ospf_filter" protocol section in the UCI configuration and sets each option in the bird4.conf file.
+# $1 is set as the ID of the current UCI ospf_filter section.
+# This function checks if the filter file exists, if it meets protocol's type and, it writes its content to the configuration file.
+prepare_ospf_filters() {
+    local section="$1"
+    local type
+    local file_path
+    get type $section
+    get file_path $section
+    if [ -e "$file_path" ]; then
+        local filter_content=`cat $file_path`
+        if [ -n "$type" -a "$type" = "ospf" ]; then
+            writeToConfig "#Filter $section:"
+            writeToConfig "${filter_content}"
+            writeToConfig " "
+        fi
+    fi
+}
+
 
 start() {
     config_load bird4
@@ -387,10 +474,15 @@ start() {
         config_foreach prepare_device 'device'
         #config_foreach prepare_direct 'direct'
 		
-        #Setup the protocols configuration (currently BGP only)
+        #Setup protocol`s configuration: BGP
         config_foreach prepare_bgp_template 'bgp_template'
         config_foreach prepare_bgp 'bgp'
         config_foreach prepare_bgp_filters 'filter'
+
+        #Setup protocol`s configuration: OSPF
+	config_foreach prepare_ospf_instance 'ospf'
+	config_foreach prepare_ospf_filters 'filter'
+
         #Start the service
         service_start $BIRD_BIN -d -c $BIRD_CONFIG -P $SERVICE_PID_FILE
     fi
