@@ -399,6 +399,49 @@ prepare_ospf_networks() {
     fi
 }
 
+# Function: prepare_ospf_password $1 $2
+
+prepare_ospf_passwords() {
+    local $section="$1"
+    local $current_interface="$2"
+    local interface; local passphrase
+    get interface $section
+    get passphrase $section
+
+    [ "current_interface" = "$interface" ] && write '            password "$passphrase";' $passphrase
+}
+
+# Function: prepare_ospf_neighbors $1 $2
+
+#prepare_ospf_neighbors() {
+#}
+
+# Function: prepare_ospf_interface $1 $2
+
+prepare_ospf_interface() {
+    local section="$1"
+    local current_area="$2"
+    local area; local cost; local type; local hello; local priority; local retransmit; local authentication
+    get area $section
+    get cost $section
+    get type $section
+    get hello $section
+    get priority $section
+    get retransmit $section
+
+    if [ "$current_area" = "$area" ]; then
+        writeToConfig '        interface "$section" {'
+        write "            cost $cost;" $cost
+        write "            hello $hello;" $hello
+        write "            type $type;" $type
+        write "            retransmit $retransmit;" $retransmit
+        write "            authentication $authentication;" $authentication
+        config_foreach prepare_ospf_passwords "ospf_password" $section
+ #       config_foreach prepare_ospf_neighbors "ospf_neighbor" $section
+        writeToConfig "        };"
+    fi
+}
+
 # Function: prepare_ospf_area $1
 
 prepare_ospf_area() {
@@ -412,7 +455,7 @@ prepare_ospf_area() {
         [ -n "$stub" -a "$stub" = "1" ] && writeToConfig "        stub yes;"
         [ -n "$default_cost" ] && writeToConfig "        default cost $default_cost;"
         config_foreach prepare_ospf_networks "ospf_networks" $section
-        config_foreach prepare_ospf_interface "ospf_interface"
+        config_foreach prepare_ospf_interface "ospf_interface" $section
         writeToConfig "    };"
     fi
 }
@@ -427,8 +470,8 @@ prepare_ospf_instance() {
     get cfg1583compat $section
     get tick $section
     writeToConfig "protocol ospf $section {"
-    [ -e "$cfg1583compat" ] && write_bool cfg1583compat $cfg1583compat
-    [ -e "$tick" ] && write_bool tick $tick
+    [ -n "$cfg1583compat" ] && write_bool cfg1583compat $cfg1583compat
+    [ -n "$tick" ] && write_bool tick $tick
     config_foreach prepare_ospf_area 'ospf_area'
     writeToConfig "}"
 }
@@ -480,8 +523,8 @@ start() {
         config_foreach prepare_bgp_filters 'filter'
 
         #Setup protocol`s configuration: OSPF
-	config_foreach prepare_ospf_instance 'ospf'
-	config_foreach prepare_ospf_filters 'filter'
+	    config_foreach prepare_ospf_instance 'ospf'
+        config_foreach prepare_ospf_filters 'filter'
 
         #Start the service
         service_start $BIRD_BIN -d -c $BIRD_CONFIG -P $SERVICE_PID_FILE
