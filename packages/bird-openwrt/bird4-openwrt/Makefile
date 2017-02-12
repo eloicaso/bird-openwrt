@@ -1,5 +1,4 @@
-# Copyright (C) 2014 - Eloi Carbó Solé (GSoC2014) 
-# BGP/Bird integration with OpenWRT and QMP
+# Copyright (C) 2014-2017  Eloi Carbo <eloicaso@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

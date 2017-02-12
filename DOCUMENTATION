@@ -1,7 +1,6 @@
 ---------------------------------------------------------------------
 
-Copyright (C) 2014 - Eloi Carbó Solé (GSoC2014) 
-BGP/Bird integration with OpenWRT and QMP
+(C) 2014 - 2017 Eloi Carbo
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,13 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ---------------------------------------------------------------------
 
-"BGP/Bird integration with OpenWRT and QMP" project DOCUMENTATION
-
-*** Original documentation for BIRD Daemon can be found here: http://bird.network.cz/?get_doc
-*** Some interesting examples are placed in BIRD daemon Gitlab page: https://gitlab.labs.nic.cz/labs/bird/wikis/home
+*** BIRD Daemon's original documentation: http://bird.network.cz/?get_doc
+*** Usage examples (Gitlab): https://gitlab.labs.nic.cz/labs/bird/wikis/home
 *** If you want to add new options to bird*-openwrt packages,
-*** feel free to make a pull request it in: https://github.com/eloicaso/bird-openwrt
-*** or email me and ask for it: eloicaso@openmailbox.org
+*** add a pull request or issue in: https://github.com/eloicaso/bird-openwrt
 
 - Options used in /etc/config/birdX -
 
