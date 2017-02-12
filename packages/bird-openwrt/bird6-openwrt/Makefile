@@ -1,5 +1,4 @@
-# Copyright (C) 2014 - Eloi Carbó Solé (GSoC2014) 
-# BGP/Bird integration with OpenWRT and QMP
+# Copyright (C) 2014-2017  Eloi Carbo <eloicaso@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,7 +38,7 @@ define Package/$(uci)
   CATEGORY:=Network
   SUBMENU:=Routing and Redirection
   MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
-  URL:=https://github.com/eloicaso/bird6-openwrt/
+  URL:=https://github.com/eloicaso/bird-openwrt/
   DEPENDS:=+$(BIRD) +libuci +uci
 endef
 
@@ -73,7 +72,7 @@ define Package/$(luci)
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
   MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
-  URL:=https://github.com/eloicaso/bird6-openwrt/
+  URL:=https://github.com/eloicaso/bird-openwrt/
   DEPENDS:=+$(BIRD)-uci +luci-base
 endef
 

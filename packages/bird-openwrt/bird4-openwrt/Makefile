@@ -38,7 +38,7 @@ define Package/$(uci)
   CATEGORY:=Network
   SUBMENU:=Routing and Redirection
   MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
-  URL:=https://github.com/eloicaso/bird4-openwrt/
+  URL:=https://github.com/eloicaso/bird-openwrt/
   DEPENDS:=+$(BIRD) +libuci +uci
 endef
 
@@ -71,7 +71,7 @@ define Package/$(luci)
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
   MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
-  URL:=https://github.com/eloicaso/bird4-openwrt/
+  URL:=https://github.com/eloicaso/bird-openwrt/
   DEPENDS:=+$(BIRD)-uci +luci-base
 endef
 
