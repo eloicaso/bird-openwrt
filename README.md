@@ -34,9 +34,14 @@ make menuconfig -> Network -> Routing and Redirection -> Select bird*-uci
 make V=99
 ```
 
+* Compile (Option 2) the packet ( ! this method requires to compile its dependeces before using Option 1)
+```
+make /package/feeds/bird4wrt/bird4-openwrt/compile V=99
+make /package/feeds/bird4wrt/bird4-openwrt/install V=99
+```
+
 * Find your package in
 ```
 [OpenWRT_folder]/bin/{Architecture}/packages/bird*-uci_{Version}_{Architecture}.ipk
 [OpenWRT_folder]/bin/{Architecture}/packages/luci-app-bird*_{Version}_{Architecture}.ipk
 ```
-
