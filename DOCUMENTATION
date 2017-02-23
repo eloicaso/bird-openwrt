@@ -355,14 +355,14 @@ This list of IPs specifies the list (following the sequence) of routers that the
 
 CONFIGURATION SECTION 10: 'filter NAME' 
 Filters are written in separated files. Its syntax can be found in http://bird.network.cz/?get_doc&f=bird-5.html
-The content of each filter file is copied in the birdX.conf file without checking its syntax.
+The content of each filter file is copied in the birdX.conf file without checking its syntax. By default, bird*-uci creates a filters folder under /etc/config/bird*, but you still have to add its full path.
 
 Example
 --
 config filter 'firstFilter'
     option type 'bgp'
     option instance 'bgp1'
-    option file_path '/var/filters/f1'
+    option file_path '/etc/config/bird4/filters/f1' # Example
 --
 
 * type: String

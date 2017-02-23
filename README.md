@@ -11,20 +11,29 @@ This repository contains an UCI module adding support for an user-friendly confi
 /etc/config/bird\* *MUST be configured with your correct settings BEFORE executing it. Otherwise, Bird may crash.*
 
 ## How to compile:
+Due to the existence of Routing's bird-openwrt packages, if you want to build your system using this repo's bird packages, you need to proceed as follows:
 
-* Add this github as a repository in feeds.conf
+
+* Add this github as a repository in feeds.conf. Alternatively, you could use a local git clone)
 ```
 src-git birdwrt https://github.com/eloicaso/bird-openwrt.git
+
+```
+OR
+```
+src-link birdwrt /path/to/your/git/clone/bird-openwrt
 ```
 
-* Enable OpenWRT-Routing repository to fulfill the dependencies
+
+* Update and install all packages in feeds
+```
+./scripts/feeds update -a; ./scripts/feeds install -a
+```
+
+* Enable OpenWRT-Routing repository to fulfill bird{4/6} dependencies
 ```
 src-git routing https://github.com/openwrt-routing/packages.git
-```
-
-* Update and install the package (in OpenWRT compilation root directory)
-```
-scripts/feeds update -a; scripts/feeds install -a
+./scripts/feeds update routing; ./scripts/feeds install bird4 bird6
 ```
 
 * Compile (Option 1) the whole OpenWRT image with the package included
