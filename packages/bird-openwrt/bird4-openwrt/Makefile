@@ -51,7 +51,7 @@ define Package/$(uci)/install
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/$(BIRD)/filters
 	$(INSTALL_DIR) $(1)/etc/$(BIRD)/functions
-	$(INSTALL_BIN) ./src/init.d/$(BIRD) $(1)/etc/$(BIRD)/init.d/
+	$(INSTALL_BIN) ./src/init.d/$(BIRD)* $(1)/etc/$(BIRD)/init.d/
 	$(CP) ./src/uci-defaults/$(uci)-install-init.d $(1)/etc/$(BIRD)/init.d/
 	$(CP) ./src/config/$(BIRD) $(1)/etc/config/
 endef

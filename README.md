@@ -45,8 +45,7 @@ make V=99
 
 * Compile (Option 2) the packet ( ! this method requires to compile its dependeces before using Option 1)
 ```
-make package/feeds/routing/bird{4/6}-openwrt/compile V=99
-make package/feeds/routing/bird{4/6}-openwrt/install V=99
+make package/feeds/birdwrt/bird{4/6}-openwrt/compile V=99
 ```
 
 * Find your package in
