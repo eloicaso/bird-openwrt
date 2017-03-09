@@ -53,3 +53,11 @@ make package/feeds/birdwrt/bird{4/6}-openwrt/compile V=99
 [OpenWRT_folder]/bin/packages/{Architecture}/routing/bird{4/6}-uci_{Version}_{Architecture}.ipk
 [OpenWRT_folder]/bin/packages/{Architecture}/routing/luci-app-bird{4/6}_{Version}_{Architecture}.ipk
 ```
+
+* Install your .ipk in your dev-environment (avoid CheckSum Missmatch issues)
+```
+scp bird{4/6}-uci_{Version}_{Architecture}.ipk user@IPAddres:/tmp
+
+On your Dev-Environment:
+opkg install bird{4/6}-uci_{Version}_{Architecture}.ipk --force-checksum
+```
