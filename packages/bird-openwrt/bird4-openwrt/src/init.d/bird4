@@ -17,61 +17,99 @@
 #
 
 BIRD="bird4"
-BIRD_CONFIG="/etc/$BIRD.conf"
+BIRD_CONFIG="/etc/${BIRD}.conf"
+BIRD_LOG="/var/log/${BIRD}.log"
 
 START=99
 STOP=10
 
 SERVICE_DAEMONIZE=1
 SERVICE_USE_PID=1
-SERVICE_PID_FILE="/var/run/$BIRD.pid"
+SERVICE_PID_FILE="/var/run/${BIRD}.pid"
 
-BIRD_BIN="/usr/sbin/$BIRD"
+BIRD_BIN="/usr/sbin/${BIRD}"
 
 . /etc/${BIRD}/init.d/${BIRD}-lib.sh
 
 start() {
-    config_load bird4
+    config_load ${BIRD}
     local use_UCI_config
     get use_UCI_config 'bird'
-	
+
     if [ -z "$use_UCI_config" -o "$use_UCI_config" = "0" ]; then
-        service_start $BIRD_BIN -d -c $BIRD_CONFIG -P $SERVICE_PID_FILE
+        # Disable Custom bird-openwrt settings.
+        # Use default behaviour and files
+        service_start $BIRD_BIN -d -c $BIRD_CONFIG -P $SERVICE_PID_FILE -D $BIRD_LOG
     else
         #Set Bird4 configuration location:
         local UCI_config_File
-        get UCI_config_File 'bird'
-        BIRD_CONFIG="${UCI_config_file}:-/tmp/bird4.conf"
+        local log_file
+        get UCI_config_file 'bird'
+        get log_file 'global'
+        BIRD_CONFIG="${UCI_config_file:-$BIRD_CONFIG}"
+        BIRD_LOG="${log_file:-$BIRD_LOG}"
+        #Backup previous configuration
+        cp ${BIRD_CONFIG} ${BIRD_CONFIG}.bak
         #Setup the basic configuration
         prepare_global 'global'
         config_foreach prepare_kernel 'kernel'
         config_foreach prepare_static 'static'
         config_foreach prepare_device 'device'
         #config_foreach prepare_direct 'direct'
-		
-        #Setup protocol`s configuration: BGP
-        config_foreach prepare_bgp_template 'bgp_template'
-        config_foreach prepare_bgp 'bgp'
-        config_foreach prepare_bgp_filters 'filter'
 
-        #Setup protocol`s configuration: OSPF
-	    config_foreach prepare_ospf_instance 'ospf'
+        #Setup protocol's configuration: BGP
+        config_foreach prepare_bgp_template 'bgp_template'
+        config_foreach prepare_bgp_filters 'filter'
+        config_foreach prepare_bgp 'bgp'
+
+        #Setup protocol's configuration: OSPF
         config_foreach prepare_ospf_filters 'filter'
+        config_foreach prepare_ospf_instance 'ospf'
 
         #Start the service
-        service_start $BIRD_BIN -d -c $BIRD_CONFIG -P $SERVICE_PID_FILE
+        echo "Starting ${BIRD} Service [ ... ]"
+        touch /tmp/${BIRD}.err
+        $BIRD_BIN -d -c $BIRD_CONFIG -P $SERVICE_PID_FILE -D $BIRD_LOG &>/tmp/${BIRD}.err &
+        while [ ! -s $SERVICE_PID_FILE ]; do
+            sleep 1
+            if [ -s /tmp/${BIRD}.err ]; then
+                echo -e "${BIRD} Daemon Start Status: \033[0;31m[ FAILED ]\e[m"
+                cat /tmp/${BIRD}.err
+                cat /tmp/${BIRD}.err >> ${BIRD_LOG}
+                break
+            fi
+        done
+
+        if [ -s $SERVICE_PID_FILE ]; then
+            echo -e "${BIRD} Daemon Start Status: \033[0;32m[ OK ]\e[m"
+        fi
+        rm -f /tmp/${BIRD}.err
     fi
 }
 
 stop() {
-    service_stop $BIRD_BIN
+    if [ -s $SERVICE_PID_FILE ]; then
+        config_load ${BIRD}
+        local log_file
+        get log_file 'global'
+        BIRD_LOG="${log_file:-$BIRD_LOG}"
+        start-stop-daemon -p $SERVICE_PID_FILE -K 2>&1 >> $BIRD_LOG
+        if [ $? -eq 0 ]; then
+            echo -e "${BIRD} Daemon Stop Status: \033[0;32m[ OK ]\e[m"
+        else
+            echo -e "${BIRD} Daemon Stop Status: \033[0;31m[ FAILED ]\e[m"
+            echo "Check $BIRD_LOG file for more information."
+        fi
+    else
+        echo -e "${BIRD} Daemon Service already stopped. \033[0;31m[ FAILED ]\e[m"
+    fi
 }
 
 restart() {
     stop
+    sleep 3
     start
 }
-
 
 reload() {
     service_reload $BIRD_BIN

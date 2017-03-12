@@ -121,8 +121,28 @@ prepare_global () {
     # First line of the NEW configuration file
     echo "#Bird4 configuration using UCI:" > $BIRD_CONFIG
     writeToConfig " "
-    [ -n "$log_file" -a -n "$log" ] && writeToConfig 'log "'$log_file'" '$log';'
-    write "debug protocols $debug;" $debug
+    #TODO: Set Syslog as receiver if empty
+    #    LOGF="${log_file:-syslog]}"
+    #TODO: If $log/$debug are empty, set to off
+     if [ -n "$log_file" -a -n "$log" ]; then
+         firstEntry="${log:0:3}"
+         if [ "$firstEntry" = "all" -o "$firstEntry" = "off" ]; then
+             writeToConfig 'log "'$log_file'" '$firstEntry';'
+         else
+             logEntries=$(echo $log | tr " " ",")
+             writeToConfig "log \"$log_file\" { ${logEntries} };"
+         fi
+     fi
+
+     if [ -n "$debug" ]; then
+         firstEntry="${debug:0:3}"
+         if [ "$firstEntry" = "all" -o "$firstEntry" = "off" ]; then
+             writeToConfig "debug protocols $firstEntry;"
+         else
+             debugEntries=$(echo $debug | tr " " ",")
+             writeToConfig "debug protocols { ${debugEntries} };"
+         fi
+     fi
     writeToConfig " "
     writeToConfig "#Router ID"
     write "router id $router_id;" $router_id
@@ -519,8 +539,9 @@ prepare_ospf_instance() {
     get cfg1583compat $section
     get tick $section
     writeToConfig "protocol ospf $section {"
-    [ -n "$cfg1583compat" ] && write_bool cfg1583compat $cfg1583compat
-    [ -n "$tick" ] && write_bool tick $tick
+    [ -n "$cfg1583compat" ] && cfg1583State="yes" || cfg1583State="no"
+    writeToConfig "    rfc1583compat $cfg1583State;"
+    [ -n "$tick" ] && writeToConfig "    tick $tick;"
     config_foreach prepare_ospf_area 'ospf_area'
     writeToConfig "}"
 }
