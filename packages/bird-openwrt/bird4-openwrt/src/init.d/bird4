@@ -55,7 +55,8 @@ start() {
         config_foreach prepare_kernel 'kernel'
         config_foreach prepare_static 'static'
         config_foreach prepare_device 'device'
-        #config_foreach prepare_direct 'direct'
+        config_foreach prepare_direct 'direct'
+        config_foreach prepare_pipe 'pipe'
 
         #Setup protocol's configuration: BGP
         config_foreach prepare_bgp_template 'bgp_template'
