@@ -16,6 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Extra Service Function to get the Status of the Service
+# This complements /etc/rc.common functions
+EXTRA_COMMANDS="status"
+EXTRA_HELP="        status  Returns service status"
+
 BIRD="bird4"
 BIRD_CONFIG="/etc/${BIRD}.conf"
 BIRD_LOG="/var/log/${BIRD}.log"
@@ -52,6 +57,13 @@ start() {
         cp ${BIRD_CONFIG} ${BIRD_CONFIG}.bak
         #Setup the basic configuration
         prepare_global 'global'
+
+        # Gather and set all Filters
+        gather_filters
+        # Gather and set all Functions
+        gather_functions
+
+        # Setup Main Protocols
         config_foreach prepare_kernel 'kernel'
         config_foreach prepare_static 'static'
         config_foreach prepare_device 'device'
@@ -60,11 +72,9 @@ start() {
 
         #Setup protocol's configuration: BGP
         config_foreach prepare_bgp_template 'bgp_template'
-        config_foreach prepare_bgp_filters 'filter'
         config_foreach prepare_bgp 'bgp'
 
         #Setup protocol's configuration: OSPF
-        config_foreach prepare_ospf_filters 'filter'
         config_foreach prepare_ospf_instance 'ospf'
 
         #Start the service
@@ -114,4 +124,14 @@ restart() {
 
 reload() {
     service_reload $BIRD_BIN
+}
+
+status() {
+    if [ -s $SERVICE_PID_FILE ]; then
+        echo -e "${BIRD} start status: \033[0;32m[ RUNNING ]\e[m"
+        return 0
+    else
+        echo -e "${BIRD} service status: \033[0;31m[ STOPPED ]\e[m"
+        return 1
+    fi
 }

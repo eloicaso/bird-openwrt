@@ -567,3 +567,31 @@ prepare_ospf_filters() {
         fi
     fi
 }
+
+
+# Function: gather_filters
+# This function gets all the FILES under /filters folder and adds
+# them into the config as %include elements on top of the file
+# If there are no filters, the section will remain empty.
+gather_filters() {
+    writeToConfig "#Filters Section:"
+    for filter in $(find /etc/${BIRD}/filters -type f); do
+        writeToConfig "include \"$filter\";"
+    done
+    writeToConfig "#End of Filters --"
+    writeToConfig " "
+}
+
+
+# Function: gather_functions
+# This function gets all the FILES under /functions folder and adds
+# them into the config as %include elements on top of the file
+# If there are no filters, the section will remain empty.
+gather_functions() {
+    writeToConfig "#Functions Section:"
+    for func in $(find /etc/${BIRD}/functions -type f); do
+        writeToConfig "include \"$func\";"
+    done
+    writeToConfig "#End of Functions --"
+    writeToConfig " "
+}
