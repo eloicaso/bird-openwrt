@@ -1,4 +1,4 @@
-# Bird4-OpenWRT Library - Functions used in /etc/init.d/bird4 script.
+# Bird6-OpenWRT Library - Functions used in /etc/init.d/bird6 script.
 #
 #
 # Copyright (C) 2014-2017 - Eloi Carbo
@@ -75,25 +75,9 @@ multipath_list() {
 }
 
 
-# Function: range_list $1
-# $1 string
-# This function writes the $1 string in the OSPF networks.
-range_list(){
-    write "            $1;" $1
-}
-
-
-# Function: hidden_range_list $1
-# $1 string
-# This function writes the $1 string in the OSPF networks as hidden.
-hidden_range_list(){
-   write "            $1 hidden;" $1
-}
-
-
 # Function: prepare_tables $1
 # $1 string
-# This function gets each "table" section in the UCI configuration and sets each option in the bird4.conf file.
+# This function gets each "table" section in the UCI configuration and sets each option in the bird6.conf file.
 # $1 is set as the ID of the current UCI table section
 prepare_tables() {
     local section="$1"; local name
@@ -104,11 +88,11 @@ prepare_tables() {
 
 # Function: prepare_global $1
 # $1 string
-# This function gets each "global" section in the UCI configuration and sets each option in the bird4.conf file.
-# $1 is set as the ID of the current UCI global section. prepare_global is the first configuration set in the bird4.conf and removes the old file.
+# This function gets each "global" section in the UCI configuration and sets each option in the bird6.conf file.
+# $1 is set as the ID of the current UCI global section. prepare_global is the first configuration set in the bird6.conf and removes the old file.
 prepare_global () {
     local section="$1"
-    local log_file; local log; local debug; local router_id; local table
+    local log_file; local log; local debug; local router_id; local table; local listen_bgp_addr; local listen_bgp_port; local listen_bgp_dual
 
     # Remove old configuration file
     rm -f "$BIRD_CONFIG"
@@ -118,9 +102,12 @@ prepare_global () {
     get debug $section
     get router_id $section
     get table $section
+    get listen_bgp_addr $section
+    get listen_bgp_port $section
+    get listen_bgp_dual $section
 
     # First line of the NEW configuration file
-    echo "#Bird4 configuration using UCI:" > $BIRD_CONFIG
+    echo "#Bird6 configuration using UCI:" > $BIRD_CONFIG
     writeToConfig " "
     #TODO: Set Syslog as receiver if empty
     #    LOGF="${log_file:-syslog]}"
@@ -150,13 +137,18 @@ prepare_global () {
     writeToConfig " "
     writeToConfig "#Secondary tables"
     config_foreach prepare_tables 'table'
+    if [ -n "$listen_bgp_dual" -o "$listen_bgp_dual" = "0" ]; then
+        writeToConfig "listen bgp $listen_bgp_addr $listen_bgp_port v6only;"
+    else
+        writeToConfig "listen bgp $listen_bgp_addr $listen_bgp_port dual;"
+    fi
     writeToConfig " "
 }
 
 
 # Function: prepare_routes $1
 # $1 string
-# This function gets each "route" section in the UCI configuration and sets each option in the bird4.conf file.
+# This function gets each "route" section in the UCI configuration and sets each option in the bird6.conf file.
 # $1 is set as the ID of the current UCI route section. Each type of route has its own treatment.
 prepare_routes() {
     local instance; local prefix; local via; local type
@@ -195,7 +187,7 @@ prepare_routes() {
 
 # Function: prepare_kernel $1
 # $1 string
-# This function gets each "kernel" protocol section in the UCI configuration and sets each option in the bird4.conf file.
+# This function gets each "kernel" protocol section in the UCI configuration and sets each option in the bird6.conf file.
 # $1 is set as the ID of the current UCI kernel section.
 prepare_kernel() {
     local section="$1"
@@ -225,7 +217,7 @@ prepare_kernel() {
 
 # Function: prepare_static $1
 # $1 string
-# This function gets each "static" protocol section in the UCI configuration and sets each option in the bird4.conf file.
+# This function gets each "static" protocol section in the UCI configuration and sets each option in the bird6.conf file.
 # $1 is set as the ID of the current UCI static section.
 prepare_static() {
     local section="$1"
@@ -246,7 +238,7 @@ prepare_static() {
 
 # Function: prepare_direct $1
 # $1 string
-# This function gets each "direct" protocol section in the UCI configuration and sets each option in the bird4.conf file.
+# This function gets each "direct" protocol section in the UCI configuration and sets each option in the bird6.conf file.
 # $1 is set as the ID of the current UCI direct section.
 prepare_direct() {
     local section="$1"
@@ -264,7 +256,7 @@ prepare_direct() {
 
 # Function: prepare_pipe $1
 # $1 string
-# This function gets each "pipe" protocol section in the UCI configuration and sets each option in the bird4.conf file.
+# This function gets each "pipe" protocol section in the UCI configuration and sets each option in the bird6.conf file.
 # $1 is set as the ID of the current UCI direct section.
 prepare_pipe() {
     local section="$1"
@@ -290,7 +282,7 @@ prepare_pipe() {
 
 # Function: prepare_device $1
 # $1 string
-# This function gets each "device" protocol section in the UCI configuration and sets each option in the bird4.conf file.
+# This function gets each "device" protocol section in the UCI configuration and sets each option in the bird6.conf file.
 # $1 is set as the ID of the current UCI device section.
 prepare_device() {
     local section="$1"
@@ -308,7 +300,7 @@ prepare_device() {
 
 # Function: prepare_bgp_template $1
 # $1 string
-# This function gets each "bgp_template" protocol section in the UCI configuration and sets each option in the bird4.conf file.
+# This function gets each "bgp_template" protocol section in the UCI configuration and sets each option in the bird6.conf file.
 # $1 is set as the ID of the current UCI bgp_template section.
 # Careful! Template options will be replaced by "instance" options if there is any match.
 prepare_bgp_template() {
@@ -425,103 +417,6 @@ prepare_bgp() {
     [ -n "$neighbor_address" -a -n "$neighbor_as" ] && writeToConfig "    neighbor $neighbor_address as $neighbor_as;"
     writeToConfig "}"
     writeToConfig " "
-}
-
-
-#Function: prepare_ospf_network $1
-# $1 string $2 string
-# This function gets each "ospf_network" protocol section in the UCI configuration, checks if its Area ID is the same as the one
-# being configurated and finally sets the list of network ranges to be propagated, or not, by the OSPF protocol
-# $1 is set as the ID of the action area of the internal networks.
-# $2 is set as the ID of the current area being configurated.
-prepare_ospf_networks() {
-    local section="$1"
-    local current_area="$2"
-    if [ "$section" = "$current_area" ]; then
-        writeToConfig "        networks {"
-        config_list_foreach $section range range_list
-        config_list_foreach $section hidden_range hidden_range_list
-        writeToConfig "        };"
-    fi
-}
-
-
-# Function: prepare_ospf_password $1 $2
-prepare_ospf_passwords() {
-    local $section="$1"
-    local $current_interface="$2"
-    local interface; local passphrase
-    get interface $section
-    get passphrase $section
-
-    [ "current_interface" = "$interface" ] && write '            password "$passphrase";' $passphrase
-}
-
-
-# Function: prepare_ospf_neighbors $1 $2
-#prepare_ospf_neighbors() {
-#}
-
-
-# Function: prepare_ospf_interface $1 $2
-prepare_ospf_interface() {
-    local section="$1"
-    local current_area="$2"
-    local area; local cost; local type; local hello; local priority; local retransmit; local authentication
-    get area $section
-    get cost $section
-    get type $section
-    get hello $section
-    get priority $section
-    get retransmit $section
-
-    if [ "$current_area" = "$area" ]; then
-        writeToConfig '        interface "$section" {'
-        write "            cost $cost;" $cost
-        write "            hello $hello;" $hello
-        write "            type $type;" $type
-        write "            retransmit $retransmit;" $retransmit
-        write "            authentication $authentication;" $authentication
-        config_foreach prepare_ospf_passwords "ospf_password" $section
- #       config_foreach prepare_ospf_neighbors "ospf_neighbor" $section
-        writeToConfig "        };"
-    fi
-}
-
-
-# Function: prepare_ospf_area $1
-prepare_ospf_area() {
-    local section="$1"
-    local instance; local stub; local default_cost
-    get instance $section
-    get stub $section
-    get default_cost $section
-    writeToConfig "    area $section {"
-    if [ -n "$instance" -a "$instance" = "$section" ]; then
-        [ -n "$stub" -a "$stub" = "1" ] && writeToConfig "        stub yes;"
-        [ -n "$default_cost" ] && writeToConfig "        default cost $default_cost;"
-        config_foreach prepare_ospf_networks "ospf_networks" $section
-        config_foreach prepare_ospf_interface "ospf_interface" $section
-        writeToConfig "    };"
-    fi
-}
-
-
-# Function: prepare_ospf_instance $1
-# $1 string
-# This function gets each "ospf_area" protocol section in the UCI configuration and sets each option in the bird4.conf file.
-# $1 is set as the ID of the current UCI ospf_area section.
-prepare_ospf_instance() {
-    local section="$1"
-    local cfg1583compat; local tick
-    get cfg1583compat $section
-    get tick $section
-    writeToConfig "protocol ospf $section {"
-    [ -n "$cfg1583compat" ] && cfg1583State="yes" || cfg1583State="no"
-    writeToConfig "    rfc1583compat $cfg1583State;"
-    [ -n "$tick" ] && writeToConfig "    tick $tick;"
-    config_foreach prepare_ospf_area 'ospf_area'
-    writeToConfig "}"
 }
 
 

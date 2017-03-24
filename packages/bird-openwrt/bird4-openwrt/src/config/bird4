@@ -13,7 +13,7 @@ config global 'global'
 
 config table
     option name 'aux'
-    
+
 config kernel kernel1
     option table 'aux'
     option import 'all'

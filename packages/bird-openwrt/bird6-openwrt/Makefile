@@ -17,13 +17,13 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
-BIRD:=bird6
-PKG_NAME:=$(BIRD)-openwrt
-PKG_RELEASE:=0.2
+BIRD := bird6
+PKG_NAME := $(BIRD)-openwrt
+PKG_RELEASE := 0.3
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
-uci:=$(BIRD)-uci
-luci:=luci-app-$(BIRD)
-
+PKG_LICENSE := GPL-3.0+
+uci := $(BIRD)-uci
+luci := luci-app-$(BIRD)
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -33,17 +33,21 @@ define Build/Compile
 endef
 
 define Package/$(uci)
-  TITLE:=The BIRD UCI module
-  SECTION:=net
-  CATEGORY:=Network
-  SUBMENU:=Routing and Redirection
-  MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
-  URL:=https://github.com/eloicaso/bird-openwrt/
-  DEPENDS:=+$(BIRD) +libuci +uci
+    TITLE:=The BIRD UCI module
+    SECTION:=net
+    CATEGORY:=Network
+    SUBMENU:=Routing and Redirection
+    MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
+    URL:=https://github.com/eloicaso/bird-openwrt/
+    DEPENDS:=+$(BIRD) +libuci +uci
 endef
 
 define Package/$(uci)/description
-$(BIRD) UCI integration module
+	$(BIRD) UCI integration module
+endef
+
+define Package/$(uci)/conffiles
+  /etc/config/$(BIRD)
 endef
 
 define Package/$(uci)/install
@@ -51,35 +55,36 @@ define Package/$(uci)/install
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/$(BIRD)/filters
 	$(INSTALL_DIR) $(1)/etc/$(BIRD)/functions
-	$(INSTALL_BIN) ./src/init.d/$(BIRD) $(1)/etc/$(BIRD)/init.d/
-	$(CP) ./src/uci-defaults/$(uci)-install-init.d $(1)/etc/$(BIRD)/init.d/
-	$(CP) ./src/config/$(BIRD) $(1)/etc/config/
+	$(INSTALL_BIN) ./src/init.d/$(BIRD)* $(1)/etc/$(BIRD)/init.d/
+	$(CP) ./src/uci-defaults/* $(1)/etc/$(BIRD)/init.d/
+	$(INSTALL_CONF) ./src/config/$(BIRD) $(1)/etc/config/
 endef
 
 define Package/$(uci)/postinst
 #!/bin/sh
-if [ -z $${IPKG_INSTROOT} ]; then
-    ( . /etc/bird6/init.d/bird6-uci-install-init.d ) && rm -f /etc/bird6/init.d/bird6-uci-install-init.d
-fi
+    if [ -z "$${IPKG_INSTROOT}" ]; then
+        ( . /etc/$(BIRD)/init.d/bird-uci-install-init.d $(BIRD) ) && rm -f /etc/$(BIRD)/init.d/bird-uci-install-init.d
+        ( . /etc/$(BIRD)/init.d/99-relocate-filters $(BIRD) ) && rm -f /etc/$(BIRD)/init.d/99-relocate-filters
+        if [ -f /etc/sysupgrade.conf ] && ! grep $(BIRD) /etc/sysupgrade.conf; then
+            echo /etc/config/$(BIRD) >> /etc/sysupgrade.conf
+        fi
+    fi
 endef
-
 
 $(eval $(call BuildPackage,$(uci)))
 
-
-
 define Package/$(luci)
-  TITLE:=LuCI support for $(BIRD)
-  SECTION:=luci
-  CATEGORY:=LuCI
-  SUBMENU:=3. Applications
-  MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
-  URL:=https://github.com/eloicaso/bird-openwrt/
-  DEPENDS:=+$(BIRD)-uci +luci-base
+    TITLE:=LuCI support for $(BIRD)
+    SECTION:=luci
+    CATEGORY:=LuCI
+    SUBMENU:=3. Applications
+    MAINTAINER:=Eloi Carbo <eloicaso@openmailbox.org>
+    URL:=https://github.com/eloicaso/bird-openwrt/
+    DEPENDS:=+$(BIRD)-uci +luci-base
 endef
 
 define Package/$(luci)/description
-$(BIRD) application for LuCI
+    $(BIRD) application for LuCI
 endef
 
 define Package/$(luci)/install

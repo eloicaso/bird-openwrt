@@ -47,7 +47,7 @@ define Package/$(uci)/description
 endef
 
 define Package/$(uci)/conffiles
-/etc/config/$(BIRD)
+	/etc/config/$(BIRD)
 endef
 
 define Package/$(uci)/install
@@ -65,9 +65,9 @@ define Package/$(uci)/postinst
     if [ -z "$${IPKG_INSTROOT}" ]; then
         ( . /etc/$(BIRD)/init.d/bird-uci-install-init.d $(BIRD) ) && rm -f /etc/$(BIRD)/init.d/bird-uci-install-init.d
         ( . /etc/$(BIRD)/init.d/99-relocate-filters $(BIRD) ) && rm -f /etc/$(BIRD)/init.d/99-relocate-filters
-		if [ -f /etc/sysupgrade.conf ] && ! grep $(BIRD) /etc/sysupgrade.conf; then
-		    echo /etc/config/$(BIRD) >> /etc/sysupgrade.conf
-		fi
+        if [ -f /etc/sysupgrade.conf ] && ! grep $(BIRD) /etc/sysupgrade.conf; then
+            echo /etc/config/$(BIRD) >> /etc/sysupgrade.conf
+        fi
     fi
 endef
 
@@ -84,7 +84,7 @@ define Package/$(luci)
 endef
 
 define Package/$(luci)/description
-$(BIRD) application for LuCI
+  $(BIRD) application for LuCI
 endef
 
 define Package/$(luci)/install
