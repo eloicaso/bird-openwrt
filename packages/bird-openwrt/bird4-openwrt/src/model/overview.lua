@@ -69,8 +69,4 @@ d:value("interfaces","Interfaces")
 d:value("events","Events")
 d:value("packets","Packets")
 
-function m.on_commit(self,map)
-        luci.sys.call('/etc/init.d/bird4 stop; /etc/init.d/bird4 start')
-end
-
 return m

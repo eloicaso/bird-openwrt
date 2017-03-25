@@ -191,9 +191,5 @@ ip =  sect_routes:option(Value, "ip", "IP address", "")
 ip:depends("type", "ip")
 ip.datatype = [[ or"ip4addr", "ip6addr" ]]
 
-function m.on_commit(self,map)
-        luci.sys.call('/etc/init.d/bird4 stop; /etc/init.d/bird4 start')
-end
-
 return m
 

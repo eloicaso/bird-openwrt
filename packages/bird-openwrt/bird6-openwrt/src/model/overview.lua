@@ -78,9 +78,4 @@ listen_port.optional = true
 listen_dual = s_bird_global:option(Flag, "listen_bgp_dual", "BGP Dual/ipv6", "Set if BGP connections will listen ipv6 only 'ipv6only' or both ipv4/6 'dual' routes")
 listen_dual.optional = true
 
-
-function m.on_commit(self,map)
-        luci.sys.call('/etc/init.d/bird6 stop; /etc/init.d/bird6 start')
-end
-
 return m

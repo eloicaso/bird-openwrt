@@ -230,9 +230,5 @@ type.default = "bgp"
 path = sect_filters:option(Value, "file_path", "Filter's file path", "Path to the Filter's file")
 path:depends("type", "bgp")
 
-function m.on_commit(self,map)
-        luci.sys.call('/etc/init.d/bird4 stop; /etc/init.d/bird4 start')
-end
-
 return m
 

@@ -18,9 +18,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 module("luci.controller.bird6", package.seeall)
 
 function index()
-        entry({"admin","network","bird6"}, cbi("bird6/overview"), "Bird6", 1).dependent=false
-        entry({"admin","network","bird6","overview"}, cbi("bird6/overview"), "Overview", 2).dependent=false
-        entry({"admin","network","bird6","proto_general"}, cbi("bird6/gen_proto"), "General protocols", 3).dependent=false
-        entry({"admin","network","bird6","proto_bgp"}, cbi("bird6/bgp_proto"), "BGP Protocol", 4).dependent=false
-end
+       entry({"admin","network","bird6"},
+            alias("admin","network","bird6","overview"),
+            _("Bird6"), 0).dependent = true
 
+        entry({"admin","network","bird6","overview"},
+            cbi("bird6/overview"),
+            _("Overview"), 0).leaf = true
+
+        entry({"admin","network","bird6","proto_general"},
+            cbi("bird6/gen_proto"),
+            _("General protocols"), 1).leaf = true
+
+        entry({"admin","network","bird6","proto_bgp"},
+            cbi("bird6/bgp_proto"),
+            _("BGP Protocol"), 2).leaf = true
+end
