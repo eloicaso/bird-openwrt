@@ -207,20 +207,20 @@ status() {
 
 # Luci-specific calls (stripped output).
 # The following scripts are not meant to be ran using Ash Terminal
-# Usage in: LUCI/model/cbi/bird4/status.lua
-start_q() {
+# Used in: LUCI/model/cbi/bird4/status.lua
+start_quiet() {
     LUCI="true"
     start
 }
-stop_q() {
+stop_quiet() {
     LUCI="true"
     stop
 }
-restart_q() {
+restart_quiet() {
     LUCI="true"
     restart
 }
-status_q() {
+status_quiet() {
     LUCI="true"
     status
 }

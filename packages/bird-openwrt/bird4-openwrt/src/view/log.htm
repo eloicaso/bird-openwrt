@@ -1,0 +1,32 @@
+<%+header%>
+
+<%
+    local sys = require('luci.sys')
+    if luci.http.formvalue('raw') then
+        lf = ''
+        log_file = ''
+        x = sys.call('uci get bird4.global.log_file')
+        if x == 0 then
+            log_file = sys.exec('uci get bird4.global.log_file')
+            lf = sys.exec('tail -n30 ' .. log_file):gsub('\r\n?', '\n')
+        end
+
+        luci.http.prepare_content('text/plain')
+        luci.http.write(lf)
+        return
+   end
+%>
+
+<script type="text/javascript">//<![CDATA[
+    XHR.poll(5, "<%=url('admin/network/bird4/log')%>", { raw: 1 }, function(xhrInstance)
+        {
+            var area = document.getElementById("log");
+            area.value = xhrInstance.responseText;
+        }
+    );
+//]]></script>
+
+<h4>Using: <%=pcdata(log_file)%></h4>
+<textarea readonly="readonly" style="width: 100%" wrap="on" rows="30" id="log"><%=pcdata(lf)%></textarea>
+
+<%+footer%>

@@ -26,19 +26,27 @@ function index()
             cbi("bird4/status"),
             _("Status"), 0).leaf = true
 
+        entry({"admin","network","bird4","log"},
+            call("bird4/log"),
+            _("Log"), 1).leaf = true
+
         entry({"admin", "network", "bird4", "overview"},
             cbi("bird4/overview"),
-            _("Overview"), 1).leaf = true
+            _("Overview"), 2).leaf = true
 
         entry({"admin","network","bird4","proto_general"},
             cbi("bird4/gen_proto"),
-            _("General protocols"), 2).leaf = true
+            _("General protocols"), 3).leaf = true
 
         entry({"admin","network","bird4","proto_bgp"},
             cbi("bird4/bgp_proto"),
-            _("BGP Protocol"), 3).leaf = true
+            _("BGP Protocol"), 4).leaf = true
 
         entry({"admin","network","bird4","filters"},
             cbi("bird4/filters"),
-            _("Filters"), 4).leaf = true
+            _("Filters"), 5).leaf = true
+
+        entry({"admin","network","bird4","functions"},
+            cbi("bird4/functions"),
+            _("Functions"), 6).leaf = true
 end

@@ -16,20 +16,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ]]--
 
 local fs = require "nixio.fs"
-local filters_dir = "/etc/bird4/filters/"
+local functions_dir = "/etc/bird4/functions/"
+local write_file = ""
 
-m = SimpleForm("bird4", "Bird4 Filters", "Bird4 Filters Editor")
+m = SimpleForm("bird4", "Bird4 Functions", "Bird4 Functions Editor")
 m.submit = false
-new_filter = filters_dir .. os.date("filter-%Y%m%d-%H%M")
+new_function = functions_dir .. os.date("function-%Y%m%d-%H%M")
 s = m:section(SimpleSection)
-files = s:option(ListValue, "Files", "Filter Files:")
+files = s:option(ListValue, "Files", "Function Files:")
 
 -- New File Entry
-files:value(new_filter, "New File (".. new_filter .. ")")
-files.default = new_filter
+files:value(new_function, "New File (".. new_function .. ")")
+files.default = new_function
 
 local i, file_list = 0, { }
-for filename in io.popen("find " .. filters_dir .. " -type f"):lines() do
+for filename in io.popen("find " .. functions_dir .. " -type f"):lines() do
     i = i + 1
     files:value(filename, filename)
 end
@@ -40,13 +41,16 @@ ld.inputstyle = "reload"
 st_file = s:option(DummyValue, "_stfile", "Editing file:")
 function st_file.cfgvalue(self, section)
     if ld:formvalue(section) then
+        write_file = files:formvalue(section)
         return files:formvalue(section)
-    else
+    end
+    if sv:formvalue(section) then
+        sv.write_file = write_file
         return ""
     end
 end
 
-area = s:option(Value, "_filters")
+area = s:option(Value, "_functions")
 area.template = "bird4/tvalue"
 area.rows = 20
 function area.cfgvalue(self,section)
@@ -60,13 +64,11 @@ end
 sv = s:option(Button, "_save", "Save File")
 sv.inputstyle = "apply"
 function sv.write(self, section)
-    m.message = st_file:formvalue(section)
-    local wrf = ""
-    if st_file:formvalue(section) then
-        m.message = st_file:formvalue(section)
-        wrf = st_file:formvalue(section)
+    if sv.write_file then
+        m.message = sv.write_file
         value = area:formvalue(section):gsub("\r\n?", "\n")
-        return fs.writefile(wrf, value)
+        sv.write_file = ""
+        return fs.writefile(write_file, value)
     end
 end
 
