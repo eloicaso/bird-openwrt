@@ -36,13 +36,13 @@ output = s:option(DummyValue, "_value", "Service Status")
 function output.cfgvalue(self, section)
     local ret = ""
     if start:formvalue(section) then
-        ret = sys.exec("/etc/init.d/bird4 start_q")
+        ret = sys.exec("/etc/init.d/bird4 start_quiet")
     elseif stop:formvalue(section) then
-        ret = sys.exec("/etc/init.d/bird4 stop_q")
+        ret = sys.exec("/etc/init.d/bird4 stop_quiet")
     elseif restart:formvalue(section) then
-        ret =sys.exec("/etc/init.d/bird4 restart_q")
+        ret = sys.exec("/etc/init.d/bird4 restart_quiet")
     else
-        ret = sys.exec("/etc/init.d/bird4 status_q")
+        ret = sys.exec("/etc/init.d/bird4 status_quiet")
     end
     return ret
 end

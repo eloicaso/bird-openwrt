@@ -20,7 +20,7 @@
 # This complements /etc/rc.common functions
 # Commands ending with *_q are meant to be ran in Luci. These
 # scripts' return minimal output.
-EXTRA_COMMANDS="status start_q stop_q restart_q status_q"
+EXTRA_COMMANDS="status start_quiet stop_quiet restart_quiet status_quiet"
 EXTRA_HELP="        status  Returns service status"
 
 BIRD="bird4"

@@ -67,6 +67,8 @@ define Package/$(uci)/postinst
         ( . /etc/$(BIRD)/init.d/99-relocate-filters $(BIRD) ) && rm -f /etc/$(BIRD)/init.d/99-relocate-filters
         if [ -f /etc/sysupgrade.conf ] && ! grep $(BIRD) /etc/sysupgrade.conf; then
             echo /etc/config/$(BIRD) >> /etc/sysupgrade.conf
+            echo /etc/$(BIRD)/filters/ >> /etc/sysupgrade.conf
+            echo /etc/$(BIRD)/functions/ >> /etc/sysupgrade.conf
         fi
     fi
 endef
@@ -88,10 +90,12 @@ define Package/$(luci)/description
 endef
 
 define Package/$(luci)/install
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/
-	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
-	$(CP) ./src/model/* $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
-	$(CP) ./src/controller/* $(1)/usr/lib/lua/luci/controller/
+        $(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/
+        $(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
+        $(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/$(BIRD)/
+        $(CP) ./src/model/* $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
+        $(CP) ./src/controller/* $(1)/usr/lib/lua/luci/controller/
+        $(CP) ./src/view/* $(1)/usr/lib/lua/luci/view/$(BIRD)/
 endef
 
 $(eval $(call BuildPackage,$(luci)))
