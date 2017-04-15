@@ -90,12 +90,12 @@ define Package/$(luci)/description
 endef
 
 define Package/$(luci)/install
-        $(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/
-        $(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
-        $(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/$(BIRD)/
-        $(CP) ./src/model/* $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
-        $(CP) ./src/controller/* $(1)/usr/lib/lua/luci/controller/
-        $(CP) ./src/view/* $(1)/usr/lib/lua/luci/view/$(BIRD)/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/$(BIRD)/
+	$(CP) ./src/model/* $(1)/usr/lib/lua/luci/model/cbi/$(BIRD)/
+	$(CP) ./src/controller/* $(1)/usr/lib/lua/luci/controller/
+	$(CP) ./src/view/* $(1)/usr/lib/lua/luci/view/$(BIRD)/
 endef
 
 $(eval $(call BuildPackage,$(luci)))
