@@ -313,7 +313,7 @@ prepare_device() {
 # Careful! Template options will be replaced by "instance" options if there is any match.
 prepare_bgp_template() {
     local section="$1"
-    local disabled; local table; local import; local export; local local_address; local local_as; local neighbor_address; local neighbor_as; local source_address; local next_hop_self; local next_hop_keep; local rr_client; local rr_cluster_id; local import_limit; local import_limit_action; local export_limit; local export_limit_action; local receive_limit; local receive_limit_action
+    local disabled; local table; local import; local export; local local_address; local local_as; local igp_table; local neighbor_address; local neighbor_as; local source_address; local next_hop_self; local next_hop_keep; local rr_client; local rr_cluster_id; local import_limit; local import_limit_action; local export_limit; local export_limit_action; local receive_limit; local receive_limit_action
     get_bool disabled ${section}
     get_bool next_hop_self ${section}
     get_bool next_hop_keep ${section}
@@ -322,6 +322,7 @@ prepare_bgp_template() {
     get export ${section}
     get local_address ${section}
     get local_as ${section}
+    get igp_table ${section}
     get rr_client ${section}
     get rr_cluster_id ${section}
     get import_limit ${section}
@@ -347,6 +348,7 @@ prepare_bgp_template() {
     if [ -n "${next_hop_keep}" ]; then
         [ "${next_hop_keep}" = "1" ] && writeToConfig "    next hop keep;" || writeToConfig "#    next hop keep;"
     fi
+    [ -n "${igp_table}" ] && writeToConfig "    igp table ${igp_table};"
     [ "${rr_client}" = "1" ] && writeToConfig "    rr client;" || writeToConfig "#    rr client;"
     write "    rr cluster id ${rr_cluster_id};" ${rr_cluster_id}
     if [ -n "${import_limit}" -a "${import_limit}" > "0" ]; then
@@ -374,7 +376,7 @@ prepare_bgp_template() {
 # Careful! The options set in bgp instances overlap bgp_template ones.
 prepare_bgp() {
     local section="$1"
-    local disabled; local table; local template; local description; local import; local export; local local_address; local local_as; local neighbor_address; local neighbor_as; local rr_client; local rr_cluster_id; local import_limit; local import_limit_action; local export_limit; local export_limit_action; local receive_limit; local receive_limit_action
+    local disabled; local table; local template; local description; local import; local export; local local_address; local local_as; local igp_table; local neighbor_address; local neighbor_as; local rr_client; local rr_cluster_id; local import_limit; local import_limit_action; local export_limit; local export_limit_action; local receive_limit; local receive_limit_action
     get disabled ${section}
     get table ${section}
     get template ${section}
@@ -383,6 +385,7 @@ prepare_bgp() {
     get export ${section}
     get local_address ${section}
     get local_as ${section}
+    get igp_table ${section}
     get rr_client ${section}
     get rr_cluster_id ${section}
     get import_limit ${section}
@@ -408,6 +411,7 @@ prepare_bgp() {
     if [ -n "${next_hop_keep}" ]; then
         [ "${next_hop_keep}" = "1" ] && writeToConfig "    next hop keep;" || writeToConfig "#    next hop keep;"
     fi
+    [ -n "${igp_table}" ] && writeToConfig "    igp table ${igp_table};"
     [ "${rr_client}" = "1" ] && writeToConfig "    rr client;" || writeToConfig "#    rr client;"
     write "    rr cluster id ${rr_cluster_id};" ${rr_cluster_id}
     if [ -n "${import_limit}" -a "${import_limit}" > "0" ]; then

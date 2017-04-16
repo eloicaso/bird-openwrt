@@ -41,16 +41,15 @@ local routeroptions = {
 	{["name"]="ip",["help"]="",["depends"]={"recursive"}}
 }
 
+
 --
 -- KERNEL PROTOCOL
 --
-
 sect_kernel_protos = m:section(TypedSection, "kernel", "Kernel options", "Configuration of the kernel protocols. First Instance MUST be Primary table (no table or kernel_table fields).")
 sect_kernel_protos.addremove = true
 sect_kernel_protos.anonymous = false
 
 -- Default kernel parameters
-
 disabled = sect_kernel_protos:option(Flag, "disabled", "Disabled", "If this option is true, the protocol will not be configured.")
 disabled.default=0
 
@@ -79,10 +78,10 @@ for _,o in ipairs(protoptions) do
 	end
 end
 
+
 --
 -- DEVICE PROTOCOL
 --
-
 sect_device_protos = m:section(TypedSection, "device", "Device options", "Configuration of the device protocols.")
 sect_device_protos.addremove = true
 sect_device_protos.anonymous = false
@@ -104,17 +103,16 @@ for _,o in ipairs(protoptions) do
 		end
 	end
 end
-																												
+
+
 --
 -- STATIC PROTOCOL
 --
-
 sect_static_protos = m:section(TypedSection, "static", "Static options", "Configuration of the static protocols.")
 sect_static_protos.addremove = true
 sect_static_protos.anonymous = false
 
 -- Default kernel parameters
-
 disabled = sect_static_protos:option(Flag, "disabled", "Disabled", "If this option is true, the protocol will not be configured.")
 disabled.default=0
 
@@ -140,18 +138,63 @@ for _,o in ipairs(protoptions) do
 	end
 end
 
+
+--
+-- PIPE PROTOCOL
+--
+sect_pipe_protos = m:section(TypedSection, "pipe", "Pipe options",     "Configuration of the Pipe protocols.")
+sect_pipe_protos.addremove = true
+sect_pipe_protos.anonymous = false
+
+-- Default Pipe parameters
+disabled = sect_pipe_protos:option(Flag, "disabled", "Disabled", "If this  option is true, the protocol will not be configured. This protocol will connect the configured 'Table' to the 'Peer Table'.")
+disabled.default=0
+
+table = sect_pipe_protos:option(Value, "table", "Table", "Select the Primary Table to connect.")
+table.optional = false
+
+peer_table = sect_pipe_protos:option(Value, "peer_table", "Peer Table", "Select the Secondary Table to connect.")
+table.optional = false
+
+mode = sect_pipe_protos:option(ListValue, "mode", "Mode", "Select Transparent to retransmit all routes and their attributes.<br />Select Opaque to retransmit optimal routes (similar to what other protocols do).")
+mode.optional = false
+mode:value("transparent")
+mode:value("opaque")
+mode.default = "transparent"
+
+import = sect_pipe_protos:option(Value, "import", "Import","")
+import.optional=true
+
+export = sect_pipe_protos:option(Value, "export", "Export", "")
+export.optional=true
+
+
+--
+-- DIRECT PROTOCOL
+--
+sect_direct_protos = m:section(TypedSection, "direct", "Direct options", "Configuration of the Direct protocols.")
+sect_direct_protos.addremove = true
+sect_direct_protos.anonymous = false
+
+-- Default Direct parameters
+disabled = sect_direct_protos:option(Flag, "disabled", "Disabled", "If this option is true, the protocol will not be configured. This protocol will connect the configured 'Table' to the 'Peer Table'.")
+disabled.optional = false
+disabled.default = 0
+
+interface = sect_direct_protos:option(Value, "interface", "Interfaces", "By default Direct will generate device routes for all the interfaces. To restrict this behaviour, select a number of patterns to match your desired interfaces:" .. "<br />" .. "1. ALL the strings MUST be quoted: \"pattern\"" .. "<br />" .. "2. Use * (star) to match patterns: \"eth*\" (include all eth... interfaces)" .. "<br />" .. "3. You can add \"-\" (minus) to exclude patterns: \"-em*\" (exclude all em... interfaces)." .. "<br />" .. "4. Separate several patterns using , (coma): \"-em*\", \"eth*\" (exclude em... and include all eth... interfaces).")
+interface.optional = false
+interface.default = "\"*\""
+
+
 --
 -- ROUTES FOR STATIC PROTOCOL
 --
-
-
 sect_routes = m:section(TypedSection, "route", "Routes configuration", "Configuration of the routes used in static protocols.")
 sect_routes.addremove = true
 sect_routes.anonymous = true
 
 instance = sect_routes:option(ListValue, "instance", "Route instance", "")
 i = 0
-
 uciout:foreach("bird4", "static",
 	function (s)
 		instance:value(s[".name"])
@@ -181,7 +224,6 @@ attribute:depends("type", "special")
 
 iface  = sect_routes:option(ListValue, "iface", "Interface", "")
 iface:depends("type", "iface")
-
 uciout:foreach("wireless", "wifi-iface",
 	function(section)
 		iface:value(section[".name"])
@@ -192,4 +234,3 @@ ip:depends("type", "ip")
 ip.datatype = [[ or"ip4addr", "ip6addr" ]]
 
 return m
-

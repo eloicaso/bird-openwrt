@@ -27,7 +27,7 @@ function index()
             _("Status"), 0).leaf = true
 
         entry({"admin","network","bird4","log"},
-            call("bird4/log"),
+            template("bird4/log"),
             _("Log"), 1).leaf = true
 
         entry({"admin", "network", "bird4", "overview"},
