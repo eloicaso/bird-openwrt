@@ -20,6 +20,11 @@ local http = require "luci.http"
 local uci = require "luci.model.uci"
 local uciout = uci.cursor()
 
+-- Repeated Strings
+local common_string = "Valid options are:<br />" .. "1. all (All the routes)<br />" .. "2. none (No routes)<br />" .. "3. filter <b>Your_Filter_Name</b> (Call a specific filter from any of the available in the filters files)"
+local imp_string = "Set if the protocol must import routes.<br />" .. common_string
+local exp_string = "Set if the protocol must export routes.<br />" .. common_string
+
 m=Map("bird4", "Bird4 BGP protocol's configuration")
 
 tab_templates = {}
@@ -31,6 +36,7 @@ uciout:foreach('bird4', 'bgp_template', function (s)
 end)
 
 -- Section BGP Templates
+
 sect_templates = m:section(TypedSection, "bgp_template", "BGP Templates", "Configuration of the templates used in BGP instances.")
 sect_templates.addremove = true
 sect_templates.anonymous = false
@@ -44,10 +50,11 @@ uciout:foreach("bird4", "table",
 		table:value(s.name)
 	end)
 table:value("")
+table.default = ""
 
-import = sect_templates:option(Value, "import", "Import","")
+import = sect_templates:option(Value, "import", "Import", imp_string)
 import.optional=true
-export = sect_templates:option(Value, "export", "Export", "")
+export = sect_templates:option(Value, "export", "Export", exp_string)
 export.optional=true
 
 source_addr = sect_templates:option(Value, "source_address", "Source Address", "Source address for BGP routing. By default uses Router ID")
@@ -64,8 +71,14 @@ next_hop_keep = sect_templates:option(Flag, "next_hop_keep", "Next hop keep", "F
 next_hop_keep.default = nil
 next_hop_keep.optional = true
 
-igp_table = sect_templates:option(Value, "igp_table", "IGP Table", "Select the IGP Routing Table to use. Hint: usually the same table as BGP.")
+igp_table = sect_templates:option(ListValue, "igp_table", "IGP Table", "Select the IGP Routing Table to use. Hint: usually the same table as BGP.")
 igp_table.optional = true
+uciout:foreach("bird4", "table",
+function(s)
+    igp_table:value(s.name)
+end)
+igp_table:value("")
+igp_table.default = ""
 
 rr_client = sect_templates:option(Flag, "rr_client", "Route Reflector server", "This router serves as a Route Reflector server and treats neighbors as clients")
 rr_client.default = nil
@@ -110,6 +123,7 @@ receive_limit_action:value("restart")
 receive_limit_action.default = "warn"
 receive_limit_action.optional = true
 
+
 local_address = sect_templates:option(Value, "local_address", "Local BGP address", "")
 local_address.optional=true
 local_as = sect_templates:option(Value, "local_as", "Local AS", "")
@@ -122,7 +136,6 @@ sect_instances.addremove = true
 sect_instances.anonymous = false
 
 templates = sect_instances:option(ListValue, "template", "Templates", "Available BGP templates")
-
 uciout:foreach("bird4", "bgp_template",
 	function(s)
 		templates:value(s[".name"])
@@ -143,8 +156,14 @@ next_hop_keep = sect_instances:option(Flag, "next_hop_keep", "Next hop keep", "F
 next_hop_keep.default = nil
 next_hop_keep.optional = true
 
-igp_table = sect_instances:option(Value, "igp_table", "IGP Table", "Select the IGP Routing Table to use. Hint: usually the same table as BGP.")
+igp_table = sect_instances:option(ListValue, "igp_table", "IGP Table", "Select the IGP Routing Table to use. Hint: usually the same table as BGP.")
 igp_table.optional = true
+uciout:foreach("bird4", "table",
+function(s)
+    igp_table:value(s.name)
+end)
+igp_table:value("")
+igp_table.default = ""
 
 rr_client = sect_instances:option(Flag, "rr_client", "Route Reflector server", "This router serves as a Route Reflector server and treats neighbors as clients")
 rr_client.default = nil
@@ -189,6 +208,7 @@ receive_limit_action:value("restart")
 receive_limit_action.default = "warn"
 receive_limit_action.optional = true
 
+
 neighbor_address = sect_instances:option(Value, "neighbor_address", "Neighbor IP Address", "")
 neighbor_as = sect_instances:option(Value, "neighbor_as", "Neighbor AS", "")
 
@@ -202,14 +222,19 @@ uciout:foreach("bird4", "table",
 	        table:value(s.name)
 			    end)
 table:value("")
+table.default = ""
 
-import = sect_instances:option(Value, "import", "Import","")
+import = sect_instances:option(Value, "import", "Import",imp_string)
 import.optional=true
-export = sect_instances:option(Value, "export", "Export", "")
+export = sect_instances:option(Value, "export", "Export", exp_string)
 export.optional=true
 local_address = sect_instances:option(Value, "local_address", "Local BGP address", "")
 local_address.optional=true
 local_as = sect_instances:option(Value, "local_as", "Local AS", "")
 local_as.optional=true
+
+function m.on_commit(self,map)
+        luci.sys.exec('/etc/init.d/bird4 restart')
+end
 
 return m

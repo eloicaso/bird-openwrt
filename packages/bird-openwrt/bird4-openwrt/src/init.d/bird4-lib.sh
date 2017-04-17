@@ -97,7 +97,9 @@ hidden_range_list(){
 # $1 is set as the ID of the current UCI table section
 prepare_tables() {
     local section="$1"; local name
+
     get name ${section}
+
     write "table ${name};" ${name}
 }
 
@@ -162,28 +164,26 @@ prepare_routes() {
     local instance; local prefix; local via; local type
     local section="$1"
     local protoInstance="$2"
+
     get instance ${section}
+    get type ${section}
+    get prefix ${section}
 
     if [ "${instance}" = "${protoInstance}" ]; then
-        get type ${section}
         case "${type}" in
             "router")
-                get prefix ${section}
                 get via ${section}
                 [ -n "${prefix}" -a -n "${via}" ] && writeToConfig "    route ${prefix} via ${via};"
                 ;;
             "special")
-                get prefix ${section}
                 get attribute ${section}
                 [ -n "${prefix}" -a -n "${attribute}" ] && writeToConfig "    route ${prefix} ${attribute};"
                 ;;
             "iface")
-                get prefix ${section}
                 get iface ${section}
                 [ -n "${prefix}" -a -n "${iface}" ] && writeToConfig '    route '${prefix}' via "'${iface}'";'
                 ;;
             "multipath")
-                get prefix ${section}
                 write "    route ${prefix} multipath" ${prefix}
                 config_list_foreach ${section} l_via multipath_list
                 writeToConfig "        ;"
@@ -199,8 +199,9 @@ prepare_routes() {
 # $1 is set as the ID of the current UCI kernel section.
 prepare_kernel() {
     local section="$1"
-    write "#${section} configuration:" ${section}
-    local disabled; local table; local kernel_table; local import; local export; local scan_time; local persist; local learn
+    local disabled; local table; local kernel_table; local import; local export
+    local scan_time; local persist; local learn
+
     get_bool disabled ${section}
     get table ${section}
     get import ${section}
@@ -209,6 +210,8 @@ prepare_kernel() {
     get kernel_table ${section}
     get learn ${section}
     get persist ${section}
+
+    write "#${section} configuration:" ${section}
     writeToConfig "protocol kernel ${section} {" ${section}
     write_bool disabled ${disabled}
     write "    table ${table};" ${table}
@@ -229,11 +232,12 @@ prepare_kernel() {
 # $1 is set as the ID of the current UCI static section.
 prepare_static() {
     local section="$1"
-    local disabled
+    local disabled; local table
+
     get disabled ${section}
+    get table ${section}
+
     if [ "${disabled}" -eq 0 ]; then
-        local table
-        get table ${section}
         writeToConfig "#${section} configration:" ${section}
         writeToConfig "protocol static {"
         write "    table ${table};" ${table}
@@ -251,8 +255,10 @@ prepare_static() {
 prepare_direct() {
     local section="$1"
     local disabled; local interface
+
     get disabled ${section}
     get interface ${section}
+
     write "#${section} configuration:" ${section}
     writeToConfig "protocol direct {"
     write_bool disabled ${disabled}
@@ -264,25 +270,27 @@ prepare_direct() {
 
 # Function: prepare_pipe $1
 # $1 string
-# This function gets each "pipe" protocol section in the UCI configuration and sets each option in the bird4.conf file.
+# This function gets each "pipe" protocol section in the UCI configuration an
 # $1 is set as the ID of the current UCI direct section.
 prepare_pipe() {
     local section="$1"
     local disabled; local table; local peer_table; local mode; local import; local export
-    get disabled ${section}
-    get peer_table ${section}
-    get mode ${section}
-    get table ${section}
-    get import ${section}
-    get export ${section}
-    write "#${section} configuration:" ${section}
-    writeToConfig "protocol pipe ${section} {" ${section}
-    write_bool disabled ${disabled}
-    write "    table ${table};" ${table}
-    write "    peer table ${peer_table};" ${peer_table}
-    write "    mode ${mode};" ${mode}
-    write "    import ${import};" ${import}
-    write "    export ${export};" ${export}
+
+    get disabled $section
+    get peer_table $section
+    get mode $section
+    get table $section
+    get import $section
+    get export $section
+
+    write "#$section configuration:" $section
+    writeToConfig "protocol pipe $section {" $section
+    write_bool disabled $disabled
+    write "    table $table;" $table
+    write "    peer table $peer_table;" $peer_table
+    write "    mode $mode;" $mode
+    write "    import $import;" $import
+    write "    export $export;" $export
     writeToConfig "}"
     writeToConfig " "
 }
@@ -295,8 +303,10 @@ prepare_pipe() {
 prepare_device() {
     local section="$1"
     local disabled; local scan_time
+
     get disabled ${section}
     get scan_time ${section}
+
     write "#${section} configuration:" ${section}
     writeToConfig "protocol device {"
     write_bool disabled ${disabled}
@@ -313,7 +323,12 @@ prepare_device() {
 # Careful! Template options will be replaced by "instance" options if there is any match.
 prepare_bgp_template() {
     local section="$1"
-    local disabled; local table; local import; local export; local local_address; local local_as; local igp_table; local neighbor_address; local neighbor_as; local source_address; local next_hop_self; local next_hop_keep; local rr_client; local rr_cluster_id; local import_limit; local import_limit_action; local export_limit; local export_limit_action; local receive_limit; local receive_limit_action
+    local disabled; local table; local import; local export; local local_address
+    local local_as; local neighbor_address; local neighbor_as; local source_address
+    local next_hop_self; local next_hop_keep; local rr_client; local rr_cluster_id
+    local import_limit; local import_limit_action; local export_limit; local export_limit_action
+    local receive_limit; local receive_limit_action; local igp_table
+
     get_bool disabled ${section}
     get_bool next_hop_self ${section}
     get_bool next_hop_keep ${section}
@@ -376,7 +391,12 @@ prepare_bgp_template() {
 # Careful! The options set in bgp instances overlap bgp_template ones.
 prepare_bgp() {
     local section="$1"
-    local disabled; local table; local template; local description; local import; local export; local local_address; local local_as; local igp_table; local neighbor_address; local neighbor_as; local rr_client; local rr_cluster_id; local import_limit; local import_limit_action; local export_limit; local export_limit_action; local receive_limit; local receive_limit_action
+    local disabled; local table; local template; local description; local import
+    local export; local local_address; local local_as; local neighbor_address
+    local neighbor_as; local rr_client; local rr_cluster_id; local import_limit
+    local import_limit_action; local export_limit; local export_limit_action
+    local receive_limit; local receive_limit_action; local igp_table
+
     get disabled ${section}
     get table ${section}
     get template ${section}
@@ -385,7 +405,6 @@ prepare_bgp() {
     get export ${section}
     get local_address ${section}
     get local_as ${section}
-    get igp_table ${section}
     get rr_client ${section}
     get rr_cluster_id ${section}
     get import_limit ${section}
@@ -396,6 +415,7 @@ prepare_bgp() {
     get receive_limit_action ${section}
     get neighbor_address ${section}
     get neighbor_as ${section}
+    get igp_table ${section}
 
     writeToConfig "#${section} configuration:"
     [ -n "${template}" ] && writeToConfig "protocol bgp ${section} from ${template} {" || writeToConfig "protocol bgp ${section} {"
@@ -441,6 +461,7 @@ prepare_bgp() {
 prepare_ospf_networks() {
     local section="$1"
     local current_area="$2"
+
     if [ "${section}" = "${current_area}" ]; then
         writeToConfig "        networks {"
         config_list_foreach ${section} range range_list
@@ -455,6 +476,7 @@ prepare_ospf_passwords() {
     local section="$1"
     local current_interface="$2"
     local interface; local passphrase
+
     get interface $section
     get passphrase $section
 
@@ -472,6 +494,7 @@ prepare_ospf_interface() {
     local section="$1"
     local current_area="$2"
     local area; local cost; local type; local hello; local priority; local retransmit; local authentication
+
     get area ${section}
     get cost ${section}
     get type ${section}
@@ -497,9 +520,11 @@ prepare_ospf_interface() {
 prepare_ospf_area() {
     local section="$1"
     local instance; local stub; local default_cost
+
     get instance ${section}
     get stub ${section}
     get default_cost ${section}
+
     writeToConfig "    area ${section} {"
     if [ -n "${instance}" -a "${instance}" = "${section}" ]; then
         [ -n "${stub}" -a "${stub}" = "1" ] && writeToConfig "        stub yes;"
@@ -518,8 +543,10 @@ prepare_ospf_area() {
 prepare_ospf_instance() {
     local section="$1"
     local cfg1583compat; local tick
+
     get cfg1583compat ${section}
     get tick ${section}
+
     writeToConfig "protocol ospf ${section} {"
     [ -n "${cfg1583compat}" ] && cfg1583State="yes" || cfg1583State="no"
     writeToConfig "    rfc1583compat ${cfg1583State};"

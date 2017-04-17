@@ -20,13 +20,18 @@ local http = require "luci.http"
 local uci = require "luci.model.uci"
 local uciout = uci.cursor()
 
+-- Repeated Strings
+local common_string = "Valid options are:<br />" .. "1. all (All the routes)<br />" .. "2. none (No routes)<br />" .. "3. filter <b>Your_Filter_Name</b>      (Call a specific filter from any of the available in the filters files)"
+local imp_string = "Set if the protocol must import routes.<br />" .. common_string
+local exp_string = "Set if the protocol must export routes.<br />" .. common_string
+
 m=Map("bird4", "Bird4 general protocol's configuration.")
 
 -- Optional parameters lists
 local protoptions = {
 	{["name"]="table", ["help"]="Auxiliar table for routing", ["depends"]={"static","kernel"}},
-	{["name"]="import", ["help"]="Set if the protocol must import routes", ["depends"]={"kernel"}},
-	{["name"]="export", ["help"]="Set if the protocol must export routes", ["depends"]={"kernel"}},
+	{["name"]="import", ["help"]=imp_string, ["depends"]={"kernel"}},
+	{["name"]="export", ["help"]=exp_string, ["depends"]={"kernel"}},
 	{["name"]="scan_time", ["help"]="Time between scans", ["depends"]={"kernel","device"}},
 	{["name"]="kernel_table", ["help"]="Set which table must be used as auxiliar kernel table", ["depends"]={"kernel"}},
 	{["name"]="learn", ["help"]="Learn routes", ["depends"]={"kernel"}},
@@ -150,22 +155,34 @@ sect_pipe_protos.anonymous = false
 disabled = sect_pipe_protos:option(Flag, "disabled", "Disabled", "If this  option is true, the protocol will not be configured. This protocol will connect the configured 'Table' to the 'Peer Table'.")
 disabled.default=0
 
-table = sect_pipe_protos:option(Value, "table", "Table", "Select the Primary Table to connect.")
+table = sect_pipe_protos:option(ListValue, "table", "Table", "Select the Primary Table to connect.")
 table.optional = false
+uciout:foreach("bird4", "table",
+  function (s)
+    table:value(s.name)
+  end)
+table:value("")
+table.default = ""
 
-peer_table = sect_pipe_protos:option(Value, "peer_table", "Peer Table", "Select the Secondary Table to connect.")
+peer_table = sect_pipe_protos:option(ListValue, "peer_table", "Peer Table", "Select the Secondary Table to connect.")
 table.optional = false
+uciout:foreach("bird4", "table",
+  function (s)
+    peer_table:value(s.name)
+  end)
+peer_table:value("")
+peer_table.default = ""
 
-mode = sect_pipe_protos:option(ListValue, "mode", "Mode", "Select Transparent to retransmit all routes and their attributes.<br />Select Opaque to retransmit optimal routes (similar to what other protocols do).")
+mode = sect_pipe_protos:option(ListValue, "mode", "Mode", "Select <b>transparent</b> to retransmit all routes and their attributes<br />Select <b>opaque</b> to retransmit optimal routes (similar to what other protocols do)")
 mode.optional = false
 mode:value("transparent")
 mode:value("opaque")
 mode.default = "transparent"
 
-import = sect_pipe_protos:option(Value, "import", "Import","")
+import = sect_pipe_protos:option(Value, "import", "Import",imp_string)
 import.optional=true
 
-export = sect_pipe_protos:option(Value, "export", "Export", "")
+export = sect_pipe_protos:option(Value, "export", "Export", exp_string)
 export.optional=true
 
 
@@ -181,7 +198,7 @@ disabled = sect_direct_protos:option(Flag, "disabled", "Disabled", "If this opti
 disabled.optional = false
 disabled.default = 0
 
-interface = sect_direct_protos:option(Value, "interface", "Interfaces", "By default Direct will generate device routes for all the interfaces. To restrict this behaviour, select a number of patterns to match your desired interfaces:" .. "<br />" .. "1. ALL the strings MUST be quoted: \"pattern\"" .. "<br />" .. "2. Use * (star) to match patterns: \"eth*\" (include all eth... interfaces)" .. "<br />" .. "3. You can add \"-\" (minus) to exclude patterns: \"-em*\" (exclude all em... interfaces)." .. "<br />" .. "4. Separate several patterns using , (coma): \"-em*\", \"eth*\" (exclude em... and include all eth... interfaces).")
+interface = sect_direct_protos:option(Value, "interface", "Interfaces", "By default Direct will generate device routes for all the interfaces. To restrict this behaviour, select a number of patterns to match your desired interfaces:" .. "<br />" .. "1. All the strings <b>MUST</b> be quoted: \"pattern\"" .. "<br />" .. "2. Use * (star) to match patterns: \"eth*\" (<b>include</b> all eth... interfaces)" .. "<br />" .. "3. You can add \"-\" (minus) to exclude patterns: \"-em*\" (<b>exclude</b> all em... interfaces)." .. "<br />" .. "4. Separate several patterns using , (coma): \"-em*\", \"eth*\" (<b>exclude</b> em... and <b>include</b> all eth... interfaces).")
 interface.optional = false
 interface.default = "\"*\""
 
@@ -232,5 +249,9 @@ uciout:foreach("wireless", "wifi-iface",
 ip =  sect_routes:option(Value, "ip", "IP address", "")
 ip:depends("type", "ip")
 ip.datatype = [[ or"ip4addr", "ip6addr" ]]
+
+function m.on_commit(self,map)
+        luci.sys.exec('/etc/init.d/bird4 restart')
+end
 
 return m
