@@ -72,6 +72,7 @@ for _,o in ipairs(protoptions) do
 							value:value(s.name)
 						end)
 					value:value("")
+					value.default = ""
 				else
 					value = sect_kernel_protos:option(Value, o.name, translate(o.name), translate(o.help))
 				end
@@ -133,6 +134,7 @@ for _,o in ipairs(protoptions) do
 							value:value(s.name)
 						end)
 					value:value("")
+					value.default = ""
 				else
 					value = sect_static_protos:option(Value, o.name, translate(o.name), translate(o.help))
 				end

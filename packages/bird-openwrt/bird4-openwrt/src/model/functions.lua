@@ -17,13 +17,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 local fs = require "nixio.fs"
 local functions_dir = "/etc/bird4/functions/"
-local write_file = ""
+local lock_file = "/etc/bird4/function_lock"
 
-m = SimpleForm("bird4", "Bird4 Functions", "Bird4 Functions Editor")
-m.submit = false
-new_function = functions_dir .. os.date("function-%Y%m%d-%H%M")
+m = SimpleForm("bird4", "Bird4 Functions", "<b>INFO:</b> New files are created using Timestamps.<br />In order to make it easier to handle, use SSH to connect to your terminal and rename those files.<br />If your file is not correctly shown in the list, please, refresh your browser.")
+
 s = m:section(SimpleSection)
 files = s:option(ListValue, "Files", "Function Files:")
+local new_function = functions_dir .. os.date("function-%Y%m%d-%H%M")
 
 -- New File Entry
 files:value(new_function, "New File (".. new_function .. ")")
@@ -41,34 +41,36 @@ ld.inputstyle = "reload"
 st_file = s:option(DummyValue, "_stfile", "Editing file:")
 function st_file.cfgvalue(self, section)
     if ld:formvalue(section) then
-        write_file = files:formvalue(section)
+        fs.writefile(lock_file, files:formvalue(section))
         return files:formvalue(section)
-    end
-    if sv:formvalue(section) then
-        sv.write_file = write_file
+    else
+        fs.writefile(lock_file, "")
         return ""
     end
 end
 
 area = s:option(Value, "_functions")
 area.template = "bird4/tvalue"
-area.rows = 20
+area.rows = 30
 function area.cfgvalue(self,section)
     if ld:formvalue(section) then
-        return fs.readfile(files:formvalue(section))
+        local contents = fs.readfile(files:formvalue(section))
+        if contents then
+            return contents
+        else
+            return ""
+        end
     else
         return ""
     end
 end
 
-sv = s:option(Button, "_save", "Save File")
-sv.inputstyle = "apply"
-function sv.write(self, section)
-    if sv.write_file then
-        m.message = sv.write_file
-        value = area:formvalue(section):gsub("\r\n?", "\n")
-        sv.write_file = ""
-        return fs.writefile(write_file, value)
+function area.write(self, section)
+    local locked_file = fs.readfile(lock_file)
+    if locked_file and not ld:formvalue(section) then
+        local text = self:formvalue(section):gsub("\r\n?", "\n")
+        fs.writefile(locked_file, text)
+        fs.writefile(lock_file, "")
     end
 end
 
