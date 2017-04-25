@@ -81,7 +81,9 @@ multipath_list() {
 # $1 is set as the ID of the current UCI table section
 prepare_tables() {
     local section="$1"; local name
+
     get name ${section}
+
     write "table ${name};" ${name}
 }
 
@@ -92,7 +94,8 @@ prepare_tables() {
 # $1 is set as the ID of the current UCI global section. prepare_global is the first configuration set in the bird6.conf and removes the old file.
 prepare_global () {
     local section="$1"
-    local log_file; local log; local debug; local router_id; local table; local listen_bgp_addr; local listen_bgp_port; local listen_bgp_dual
+    local log_file; local log; local debug; local router_id; local table
+    local listen_bgp_addr; local listen_bgp_port; local listen_bgp_dual
 
     # Remove old configuration file
     rm -f "${BIRD_CONFIG}"
@@ -154,28 +157,26 @@ prepare_routes() {
     local instance; local prefix; local via; local type
     local section="$1"
     local protoInstance="$2"
-    get instance ${section}
 
+    get instance ${section}
+    get type ${section}
+    get prefix ${section}
+    
     if [ "${instance}" = "${protoInstance}" ]; then
-        get type ${section}
         case "${type}" in
             "router")
-                get prefix ${section}
                 get via ${section}
                 [ -n "${prefix}" -a -n "${via}" ] && writeToConfig "    route ${prefix} via ${via};"
                 ;;
             "special")
-                get prefix ${section}
                 get attribute ${section}
                 [ -n "${prefix}" -a -n "${attribute}" ] && writeToConfig "    route ${prefix} ${attribute};"
                 ;;
             "iface")
-                get prefix ${section}
                 get iface ${section}
                 [ -n "${prefix}" -a -n "${iface}" ] && writeToConfig '    route '${prefix}' via "'${iface}'";'
                 ;;
             "multipath")
-                get prefix ${section}
                 write "    route ${prefix} multipath" ${prefix}
                 config_list_foreach ${section} l_via multipath_list
                 writeToConfig "        ;"
@@ -191,8 +192,9 @@ prepare_routes() {
 # $1 is set as the ID of the current UCI kernel section.
 prepare_kernel() {
     local section="$1"
-    write "#${section} configuration:" ${section}
-    local disabled; local table; local kernel_table; local import; local export; local scan_time; local persist; local learn
+    local disabled; local table; local kernel_table; local import; local export
+    local scan_time; local persist; local learn
+
     get_bool disabled ${section}
     get table ${section}
     get import ${section}
@@ -201,6 +203,8 @@ prepare_kernel() {
     get kernel_table ${section}
     get learn ${section}
     get persist ${section}
+
+    write "#${section} configuration:" ${section}
     writeToConfig "protocol kernel ${section} {" ${section}
     write_bool disabled ${disabled}
     write "    table ${table};" ${table}
@@ -221,11 +225,12 @@ prepare_kernel() {
 # $1 is set as the ID of the current UCI static section.
 prepare_static() {
     local section="$1"
-    local disabled
+    local disabled; local table
+
     get disabled ${section}
+    get table ${section}
+
     if [ "${disabled}" -eq 0 ]; then
-        local table
-        get table ${section}
         writeToConfig "#${section} configration:" ${section}
         writeToConfig "protocol static {"
         write "    table ${table};" ${table}
@@ -243,8 +248,10 @@ prepare_static() {
 prepare_direct() {
     local section="$1"
     local disabled; local interface
+
     get disabled ${section}
     get interface ${section}
+
     write "#${section} configuration:" ${section}
     writeToConfig "protocol direct {"
     write_bool disabled ${disabled}
@@ -261,12 +268,14 @@ prepare_direct() {
 prepare_pipe() {
     local section="$1"
     local disabled; local table; local peer_table; local mode; local import; local export
+
     get disabled ${section}
     get peer_table ${section}
     get mode ${section}
     get table ${section}
     get import ${section}
     get export ${section}
+
     write "#${section} configuration:" ${section}
     writeToConfig "protocol pipe ${section} {" ${section}
     write_bool disabled ${disabled}
@@ -287,8 +296,10 @@ prepare_pipe() {
 prepare_device() {
     local section="$1"
     local disabled; local scan_time
+
     get disabled ${section}
     get scan_time ${section}
+
     write "#${section} configuration:" ${section}
     writeToConfig "protocol device {"
     write_bool disabled ${disabled}
@@ -305,7 +316,12 @@ prepare_device() {
 # Careful! Template options will be replaced by "instance" options if there is any match.
 prepare_bgp_template() {
     local section="$1"
-    local disabled; local table; local import; local export; local local_address; local local_as; local neighbor_address; local neighbor_as; local source_address; local next_hop_self; local next_hop_keep; local rr_client; local rr_cluster_id; local import_limit; local import_limit_action; local export_limit; local export_limit_action; local receive_limit; local receive_limit_action
+    local disabled; local table; local import; local export; local local_address
+    local local_as; local neighbor_address; local neighbor_as; local source_address
+    local next_hop_self; local next_hop_keep; local rr_client; local rr_cluster_id
+    local import_limit; local import_limit_action; local export_limit; local export_limit_action
+    local receive_limit; local receive_limit_action; local igp_table
+
     get_bool disabled ${section}
     get_bool next_hop_self ${section}
     get_bool next_hop_keep ${section}
@@ -314,6 +330,7 @@ prepare_bgp_template() {
     get export ${section}
     get local_address ${section}
     get local_as ${section}
+    get igp_table ${section}
     get rr_client ${section}
     get rr_cluster_id ${section}
     get import_limit ${section}
@@ -339,6 +356,7 @@ prepare_bgp_template() {
     if [ -n "${next_hop_keep}" ]; then
         [ "${next_hop_keep}" = "1" ] && writeToConfig "    next hop keep;" || writeToConfig "#    next hop keep;"
     fi
+    [ -n "${igp_table}" ] && writeToConfig "    igp table ${igp_table};"
     [ "${rr_client}" = "1" ] && writeToConfig "    rr client;" || writeToConfig "#    rr client;"
     write "    rr cluster id ${rr_cluster_id};" ${rr_cluster_id}
     if [ -n "${import_limit}" -a "${import_limit}" > "0" ]; then
@@ -366,7 +384,12 @@ prepare_bgp_template() {
 # Careful! The options set in bgp instances overlap bgp_template ones.
 prepare_bgp() {
     local section="$1"
-    local disabled; local table; local template; local description; local import; local export; local local_address; local local_as; local neighbor_address; local neighbor_as; local rr_client; local rr_cluster_id; local import_limit; local import_limit_action; local export_limit; local export_limit_action; local receive_limit; local receive_limit_action
+    local disabled; local table; local template; local description; local import
+    local export; local local_address; local local_as; local neighbor_address
+    local neighbor_as; local rr_client; local rr_cluster_id; local import_limit
+    local import_limit_action; local export_limit; local export_limit_action
+    local receive_limit; local receive_limit_action; local igp_table
+
     get disabled ${section}
     get table ${section}
     get template ${section}
@@ -375,6 +398,7 @@ prepare_bgp() {
     get export ${section}
     get local_address ${section}
     get local_as ${section}
+    get igp_table ${section}
     get rr_client ${section}
     get rr_cluster_id ${section}
     get import_limit ${section}
@@ -400,6 +424,7 @@ prepare_bgp() {
     if [ -n "${next_hop_keep}" ]; then
         [ "${next_hop_keep}" = "1" ] && writeToConfig "    next hop keep;" || writeToConfig "#    next hop keep;"
     fi
+    [ -n "${igp_table}" ] && writeToConfig "    igp table ${igp_table};"
     [ "${rr_client}" = "1" ] && writeToConfig "    rr client;" || writeToConfig "#    rr client;"
     write "    rr cluster id ${rr_cluster_id};" ${rr_cluster_id}
     if [ -n "${import_limit}" -a "${import_limit}" > "0" ]; then

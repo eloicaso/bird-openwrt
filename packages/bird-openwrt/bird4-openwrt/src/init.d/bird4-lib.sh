@@ -386,7 +386,7 @@ prepare_bgp_template() {
 
 # Function: prepare_bgp $1
 # $1 string
-# This function gets each "bgp" protocol section in the UCI configuration and sets each option in the bird6.conf file.
+# This function gets each "bgp" protocol section in the UCI configuration and sets each option in the bird4.conf file.
 # $1 is set as the ID of the current UCI bgp section.
 # Careful! The options set in bgp instances overlap bgp_template ones.
 prepare_bgp() {

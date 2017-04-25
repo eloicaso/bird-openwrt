@@ -20,6 +20,11 @@ local http = require "luci.http"
 local uci = require "luci.model.uci"
 local uciout = uci.cursor()
 
+-- Repeated Strings
+local common_string = "Valid options are:<br />" .. "1. all (All the routes)<br />" .. "2. none (No routes)<br />" .. "3. filter <b>Your_Filter_Name</b> (Call a specific filter from any of the available in the filters files)"
+local imp_string = "Set if the protocol must import routes.<br />" .. common_string
+local exp_string = "Set if the protocol must export routes.<br />" .. common_string
+
 m=Map("bird6", "Bird6 BGP protocol's configuration")
 
 tab_templates = {}
@@ -45,10 +50,11 @@ uciout:foreach("bird6", "table",
 		table:value(s.name)
 	end)
 table:value("")
+table.default = ""
 
-import = sect_templates:option(Value, "import", "Import","")
+import = sect_templates:option(Value, "import", "Import", imp_string)
 import.optional=true
-export = sect_templates:option(Value, "export", "Export", "")
+export = sect_templates:option(Value, "export", "Export", exp_string)
 export.optional=true
 
 source_addr = sect_templates:option(Value, "source_address", "Source Address", "Source address for BGP routing. By default uses Router ID")
@@ -64,6 +70,15 @@ next_hop_self.optional = true
 next_hop_keep = sect_templates:option(Flag, "next_hop_keep", "Next hop keep", "Forward the received Next Hop attribute event in situations where the local address should be used instead, like subneting")
 next_hop_keep.default = nil
 next_hop_keep.optional = true
+
+igp_table = sect_templates:option(ListValue, "igp_table", "IGP Table", "Select the IGP Routing Table to use. Hint: usually the same table as BGP.")
+igp_table.optional = true
+uciout:foreach("bird6", "table",
+function(s)
+    igp_table:value(s.name)
+end)
+igp_table:value("")
+igp_table.default = ""
 
 rr_client = sect_templates:option(Flag, "rr_client", "Route Reflector server", "This router serves as a Route Reflector server and treats neighbors as clients")
 rr_client.default = nil
@@ -143,9 +158,9 @@ table:value("")
 description = sect_instances:option(TextValue, "description", "Description", "Description of the current BGP instance")
 description.optional = true
 
-import = sect_instances:option(Value, "import", "Import","")
+import = sect_instances:option(Value, "import", "Import", imp_string)
 import.optional=true
-export = sect_instances:option(Value, "export", "Export", "")
+export = sect_instances:option(Value, "export", "Export", exp_string)
 export.optional=true
 
 source_addr = sect_instances:option(Value, "source_address", "Source Address", "Source address for BGP routing. By default uses Router ID")
@@ -163,6 +178,15 @@ next_hop_self.optional = true
 next_hop_keep = sect_instances:option(Flag, "next_hop_keep", "Next hop keep", "Forward the received Next Hop attribute event in situations where the local address should be used instead, like subneting")
 next_hop_keep.default = nil
 next_hop_keep.optional = true
+
+igp_table = sect_instances:option(ListValue, "igp_table", "IGP Table", "Select the IGP Routing Table to use. Hint: usually the same table as BGP.")
+igp_table.optional = true
+uciout:foreach("bird6", "table",
+function(s)
+    igp_table:value(s.name)
+end)
+igp_table:value("")
+igp_table.default = ""
 
 rr_client = sect_instances:option(Flag, "rr_client", "Route Reflector server", "This router serves as a Route Reflector server and treats neighbors as clients")
 rr_client.default = nil
@@ -207,26 +231,8 @@ receive_limit_action:value("restart")
 receive_limit_action.default = "warn"
 receive_limit_action.optional = true
 
--- Section BGP Filters
-
-sect_filters = m:section(TypedSection, "filter", "BGP Filters", "Filters of the BGP instances")
-sect_filters.addremove = true
-sect_filters.anonymous = false
-sect_filters:depends("type", "bgp")
-
-instance = sect_filters:option(ListValue, "instance", "BGP instance", "Filter's BGP instance")
-instance:depends("type", "bgp")
-
-uciout:foreach("bird6", "bgp",
-	function (s)
-		instance:value(s[".name"])
-	end)
-
-type = sect_filters:option(Value, "type", "Filter type", "")
-type.default = "bgp"
-
-path = sect_filters:option(Value, "file_path", "Filter's file path", "Path to the Filter's file")
-path:depends("type", "bgp")
+function m.on_commit(self,map)
+        luci.sys.exec('/etc/init.d/bird6 restart')
+end
 
 return m
-

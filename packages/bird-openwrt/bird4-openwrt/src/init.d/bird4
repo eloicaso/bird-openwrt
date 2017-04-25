@@ -18,7 +18,7 @@
 
 # Extra Service Function to get the Status of the Service
 # This complements /etc/rc.common functions
-# Commands ending with *_q are meant to be ran in Luci. These
+# Commands ending with *_quiet are meant to be ran in Luci. These
 # scripts' return minimal output.
 EXTRA_COMMANDS="status start_quiet stop_quiet restart_quiet status_quiet"
 EXTRA_HELP="        status  Returns service status"
@@ -111,19 +111,19 @@ start() {
     done
 
     if [ -s ${SERVICE_PID_FILE} ]; then
-		if [ -s ${BIRD_ERR} ]; then
-			if [ "${LUCI}" == "false" ]; then
-				echo -e "${BIRD} Daemon already started. Status \033[0;32m[ RUNNING ]\e[m"
-			else
-				echo "${BIRD} already started"
-			fi
-		else
-        	if [ "${LUCI}" == "false" ]; then
-            	echo -e "${BIRD} Daemon Start Status: \033[0;32m[ STARTED ]\e[m"
-        	else
-            	echo "${BIRD} - Started"
-        	fi
-		fi
+        if [ -s ${BIRD_ERR} ]; then
+            if [ "${LUCI}" == "false" ]; then
+                echo -e "${BIRD} Daemon already started. Status \033[0;32m[ RUNNING ]\e[m"
+            else
+                echo "${BIRD} already started"
+            fi
+        else
+            if [ "${LUCI}" == "false" ]; then
+                echo -e "${BIRD} Daemon Start Status: \033[0;32m[ STARTED ]\e[m"
+            else
+                echo "${BIRD} - Started"
+            fi
+        fi
         # PID File found (service started correctly)
         return 0
     fi
@@ -164,11 +164,11 @@ stop() {
 }
 
 restart() {
-    stop	
+    stop
     sleep 1
-	if [ "${LUCI}" == "true" ]; then
-		echo " ... "
-	fi
+    if [ "${LUCI}" == "true" ]; then
+        echo " ... "
+    fi
     start
 }
 
