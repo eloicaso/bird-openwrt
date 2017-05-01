@@ -43,7 +43,7 @@ define Package/$(uci)
 endef
 
 define Package/$(uci)/description
-	$(BIRD) UCI integration module
+$(BIRD) UCI integration module
 endef
 
 define Package/$(uci)/conffiles
@@ -86,7 +86,7 @@ define Package/$(luci)
 endef
 
 define Package/$(luci)/description
-    $(BIRD) application for LuCI
+$(BIRD) application for LuCI
 endef
 
 define Package/$(luci)/install

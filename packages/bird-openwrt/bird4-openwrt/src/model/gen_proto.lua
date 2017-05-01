@@ -35,7 +35,7 @@ local protoptions = {
 	{["name"]="scan_time", ["help"]="Time between scans", ["depends"]={"kernel","device"}},
 	{["name"]="kernel_table", ["help"]="Set which table must be used as auxiliar kernel table", ["depends"]={"kernel"}},
 	{["name"]="learn", ["help"]="Learn routes", ["depends"]={"kernel"}},
-	{["name"]="persist", ["help"]="Store routes. After a restart, routes will be still configured", ["depends"]={"kernel"}}
+	{["name"]="persist", ["help"]="Store routes. After a restart, routes willstill be configured", ["depends"]={"kernel"}}
 }
 
 local routeroptions = {
