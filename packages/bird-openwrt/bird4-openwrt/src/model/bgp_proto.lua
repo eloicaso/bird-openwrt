@@ -87,7 +87,7 @@ rr_client.optional = true
 rr_cluster_id = sect_templates:option(Value, "rr_cluster_id", "Route Reflector Cluster ID", "Identificator of the RR cluster. By default uses the Router ID")
 rr_cluster_id.optional = true
 
-import_limit = sect_templates:option(Value, "import_limit", "Routes import limit", "Specify an import route limit. By default is disabled '0'")
+import_limit = sect_templates:option(Value, "import_limit", "Routes import limit", "Specify an import route limit. Leave this field blank to disable import limits.")
 import_limit.default= "0"
 import_limit.optional = true
 
@@ -99,7 +99,7 @@ import_limit_action:value("restart")
 import_limit_action.default = "warn"
 import_limit_action.optional = true
 
-export_limit = sect_templates:option(Value, "export_limit", "Routes export limit", "Specify an export route limit. By default is disabled '0'")
+export_limit = sect_templates:option(Value, "export_limit", "Routes export limit", "Specify an export route limit. Leave this field blank to disable export limits.")
 export_limit.default="0"
 export_limit.optional = true
 
@@ -111,7 +111,7 @@ export_limit_action:value("restart")
 export_limit_action.default = "warn"
 export_limit_action.optional = true
 
-receive_limit = sect_templates:option(Value, "receive_limit", "Routes received limit", "Specify a received route limit. By default is disabled '0'")
+receive_limit = sect_templates:option(Value, "receive_limit", "Routes received limit", "Specify a received route limit. Leave this field blank to disable received routes limits.")
 receive_limit.default="0"
 receive_limit.optional = true
 
