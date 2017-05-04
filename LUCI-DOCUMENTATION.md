@@ -1,0 +1,85 @@
+<!--
+---------------------------------------------------------------------
+(C) 2014 - 2017 Eloi Carbo <eloicaso@openmailbox.org>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+---------------------------------------------------------------------
+-->
+
+`Work In Progress`
+
+# LUCI Bird{4|6} v0.3 Packages Documentation
+*  BIRD Daemon's original documentation: http://bird.network.cz/?get_doc
+*  Extra documentation in English & Catalan: https://github.com/eloicaso/bgp-bmx6-bird-docn
+*  If you want to add new options to bird*-openwrt packages add a pull request or issue in: https://github.com/eloicaso/bird-openwrt
+
+> *Clarification*: This documentation covers luci-app-bird{4|6} as both are completely aligned.
+
+
+
+## Status Page
+The Status Page allows you to Start, Stop and restart the service as well as to check the result of these operations.
+
+#### Components
+- *Button* **Start**: Execute a Bird Daemon Service Start call. Operation's result is shown in the *Service Status* Text Box.
+- *Button* **Stop**: Execute a Bird Daemon Service Stop call. Operation's result is shown in the *Service Status* Text Box.
+- *Button* **Restart**: Execute a Bird Daemon Service Restart call. Operation's result is shown in the *Service Status* Text Box.
+- *Text Box* **Service Status**: Executes a Bird Daemon Service Status call. Operation's result is shown as plain text.
+
+#### Service Status common messages
+* Running: Service is running with no issues
+* Already started: You have clicked *Start* when the service was already running. No action taken.
+* Stopped: You have clicked *Stop* when the service was running. Service has been stopped.
+* Already stopped: You have clicked *Stop* when the service was already stopped. No action taken.
+* Stopped ... Started: You have pressed *Restart* when the service was running. The service has been restarted.
+* Already stopped .. Started: You have pressed *Restart* when the service was already stopped. The service has been started.
+* Failed - *ERROR MESSAGE*: There is a configuration or validation issue that prevents Bird to start. Check the *Error Message* and the Log Page to debug it and fix it.
+
+#### Error Examples
+1. Validation issues:
+  `bird4: Failed - bird: /tmp/bird4.conf, line 65: syntax error`
+
+If we check the file shown: `/tmp/bird4.conf` :
+```
+protocol bgp BGPExample {
+import Filter NonExistingFilter;
+}
+```
+We have entered an invalid (non-existent in this case) filter name. In order to fix this, write the correct Filter Name or remove its reference from the BGP Protocol Configuration Page and start the service again.
+
+2. Configuration issues:
+  ` bird4: Failed - bird: /tmp/bird4.conf, line 76: Only internal neighbor can be RR client`
+
+In this case, it is easy to spot that we have incorrectly selected the *Route Reflector Server* option incorrectly and we only need to untick it and start the service to solve it.
+
+Usuarlly, any configuration issue will be flagged appropiately through Bird service messages. However, in the event where you do not have enough information, please look for advice in either Bird's documentation or in the affected Protocol's documentation.
+
+## Log Page
+The Log Page shows the last 30 lines of the configured Bird Daemon Log file. This information is automatically refreshed each second.
+
+#### Components
+- *Text Area* **Log File**: 30 lines text area that shows the Log file information
+- *Text* **Using Log File** and **File Size**: The first line of the Text Area is fixed and shows the file being used and its current size. **Please**, check this size information regularly to avoid letting the Log information overflow your Storage as it will make your service stop and prevent it to start until you fix it.
+- *Text*: The next 30 lines show information about the events and debug information happening live. Main information are state changes and *info, warning, fatal or trace*. If you hit any issue starting the service, you can investigate the issue from this page.
+
+
+## Overview Page
+The Overview Page includes the configuration of basic Bird Daemon settings such as UCI usage, Routing Tables definition and Global Options.
+
+### Bird File Settings (UCI Usage)
+This section enables/disables the use of this package's capabilities.
+- *Flag* **Use UCI configuration**:
+  - If enabled, the package will use the UCI configuration generated by this web settings and translate it into a Bird Daemon configuration file.
+  - If disabled, the package will do nothing and you will have to manually edit a Bird Daemon configuration file.
+- *Text Box* **UCI File**: This file specifies the selected location for the translated Bird Daemon configuration file. Do not leave blank.

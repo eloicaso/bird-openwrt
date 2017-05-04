@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 local sys = require "luci.sys"
 
-m = SimpleForm("bird4", "Bird4 UCI Status Page", "This page let you Start,   Stop, Restart and check Bird4 Service Status.")
+m = SimpleForm("bird4", "Bird4 Daemon Status Page", "This page let you Start,   Stop, Restart and check Bird4 Service Status.")
 m.reset = false
 m.submit = false
 
