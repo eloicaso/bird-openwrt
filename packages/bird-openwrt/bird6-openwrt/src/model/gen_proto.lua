@@ -17,8 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 require("luci.sys")
 local http = require "luci.http"
-local uci = require "luci.model.uci"
-local uciout = uci.cursor()
+local uci = luci.model.uci.cursor()
 
 -- Repeated Strings
 local common_string = "Valid options are:<br />" .. "1. all (All the routes)<br />" .. "2. none (No routes)<br />" .. "3. filter <b>Your_Filter_Name</b>      (Call a specific filter from any of the available in the filters files)"
@@ -68,7 +67,7 @@ for _,o in ipairs(protoptions) do
 					value = sect_kernel_protos:option(Flag, o.name, translate(o.name), translate(o.help))
 				elseif o.name == "table" then 
 					value = sect_kernel_protos:option(ListValue, o.name, translate(o.name), translate(o.help))
-					uciout:foreach("bird6", "table",
+					uci:foreach("bird6", "table",
 						function (s)
 							value:value(s.name)
 						end)
@@ -131,7 +130,7 @@ for _,o in ipairs(protoptions) do
 			if d == "static" then
 				if o.name == "table" then
 					value = sect_static_protos:option(ListValue, o.name, translate(o.name), translate(o.help))
-					uciout:foreach("bird6", "table",
+					uci:foreach("bird6", "table",
 						function (s)
 							value:value(s.name)
 						end)
@@ -161,7 +160,7 @@ disabled.default=0
 
 table = sect_pipe_protos:option(ListValue, "table", "Table", "Select the Primary Table to connect.")
 table.optional = false
-uciout:foreach("bird6", "table",
+uci:foreach("bird6", "table",
   function (s)
     table:value(s.name)
   end)
@@ -170,7 +169,7 @@ table.default = ""
 
 peer_table = sect_pipe_protos:option(ListValue, "peer_table", "Peer Table", "Select the Secondary Table to connect.")
 table.optional = false
-uciout:foreach("bird6", "table",
+uci:foreach("bird6", "table",
   function (s)
     peer_table:value(s.name)
   end)
@@ -217,7 +216,7 @@ sect_routes.anonymous = true
 instance = sect_routes:option(ListValue, "instance", "Route instance", "")
 i = 0
 
-uciout:foreach("bird6", "static",
+uci:foreach("bird6", "static",
 	function (s)
 		instance:value(s[".name"])
 	end)
@@ -248,9 +247,11 @@ attribute:depends("type", "special")
 iface  = sect_routes:option(ListValue, "iface", "Interface", "")
 iface:depends("type", "iface")
 
-uciout:foreach("wireless", "wifi-iface",
+uci:foreach("network", "interface",
 	function(section)
-		iface:value(section[".name"])
+        if section[".name"] ~= "loopback" then
+            iface:value(section[".name"])
+        end
 	end)
 
 ip =  sect_routes:option(Value, "ip", "IP address", "")

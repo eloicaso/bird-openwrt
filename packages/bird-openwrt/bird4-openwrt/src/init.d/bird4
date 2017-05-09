@@ -73,10 +73,10 @@ start() {
         #Setup the basic configuration
         prepare_global 'global'
 
-        # Gather and set all Filters
-        gather_filters
         # Gather and set all Functions
         gather_functions
+        # Gather and set all Filters
+        gather_filters
 
         # Setup Main Protocols
         config_foreach prepare_kernel 'kernel'

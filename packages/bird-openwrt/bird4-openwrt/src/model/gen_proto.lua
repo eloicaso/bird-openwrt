@@ -17,8 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 require("luci.sys")
 local http = require "luci.http"
-local uci = require "luci.model.uci"
-local uciout = uci.cursor()
+local uci = luci.model.uci.cursor()
 
 -- Repeated Strings
 local common_string = "Valid options are:<br />" .. "1. all (All the routes)<br />" .. "2. none (No routes)<br />" .. "3. filter <b>Your_Filter_Name</b>      (Call a specific filter from any of the available in the filters files)"
@@ -67,7 +66,7 @@ for _,o in ipairs(protoptions) do
 					value = sect_kernel_protos:option(Flag, o.name, translate(o.name), translate(o.help))
 				elseif o.name == "table" then 
 					value = sect_kernel_protos:option(ListValue, o.name, translate(o.name), translate(o.help))
-					uciout:foreach("bird4", "table",
+					uci:foreach("bird4", "table",
 						function (s)
 							value:value(s.name)
 						end)
@@ -112,41 +111,6 @@ end
 
 
 --
--- STATIC PROTOCOL
---
-sect_static_protos = m:section(TypedSection, "static", "Static options", "Configuration of the static protocols.")
-sect_static_protos.addremove = true
-sect_static_protos.anonymous = false
-
--- Default kernel parameters
-disabled = sect_static_protos:option(Flag, "disabled", "Disabled", "If this option is true, the protocol will not be configured.")
-disabled.default=0
-
--- Optional parameters
-for _,o in ipairs(protoptions) do
-	if o.name ~= nil then
-		for _, d in ipairs(o.depends) do
-			if d == "static" then
-				if o.name == "table" then
-					value = sect_static_protos:option(ListValue, o.name, translate(o.name), translate(o.help))
-					uciout:foreach("bird4", "table",
-						function (s)
-							value:value(s.name)
-						end)
-					value:value("")
-					value.default = ""
-				else
-					value = sect_static_protos:option(Value, o.name, translate(o.name), translate(o.help))
-				end
-					value.optional = true
-					value.rmempty = true
-			end
-		end
-	end
-end
-
-
---
 -- PIPE PROTOCOL
 --
 sect_pipe_protos = m:section(TypedSection, "pipe", "Pipe options",     "Configuration of the Pipe protocols.")
@@ -159,7 +123,7 @@ disabled.default=0
 
 table = sect_pipe_protos:option(ListValue, "table", "Table", "Select the Primary Table to connect.")
 table.optional = false
-uciout:foreach("bird4", "table",
+uci:foreach("bird4", "table",
   function (s)
     table:value(s.name)
   end)
@@ -168,7 +132,7 @@ table.default = ""
 
 peer_table = sect_pipe_protos:option(ListValue, "peer_table", "Peer Table", "Select the Secondary Table to connect.")
 table.optional = false
-uciout:foreach("bird4", "table",
+uci:foreach("bird4", "table",
   function (s)
     peer_table:value(s.name)
   end)
@@ -206,6 +170,41 @@ interface.default = "\"*\""
 
 
 --
+-- STATIC PROTOCOL
+--
+sect_static_protos = m:section(TypedSection, "static", "Static options", "Configuration of the static protocols.")
+sect_static_protos.addremove = true
+sect_static_protos.anonymous = false
+
+-- Default kernel parameters
+disabled = sect_static_protos:option(Flag, "disabled", "Disabled", "If this option is true, the protocol will not be configured.")
+disabled.default=0
+
+-- Optional parameters
+for _,o in ipairs(protoptions) do
+    if o.name ~= nil then
+        for _, d in ipairs(o.depends) do
+            if d == "static" then
+                if o.name == "table" then
+                    value = sect_static_protos:option(ListValue, o.name, translate(o.name), translate(o.help))
+                    uci:foreach("bird4", "table",
+                        function (s)
+                            value:value(s.name)
+                        end)
+                    value:value("")
+                    value.default = ""
+                else
+                    value = sect_static_protos:option(Value, o.name, translate(o.name), translate(o.help))
+                end
+                    value.optional = true
+                    value.rmempty = true
+            end
+        end
+    end
+end
+
+
+--
 -- ROUTES FOR STATIC PROTOCOL
 --
 sect_routes = m:section(TypedSection, "route", "Routes configuration", "Configuration of the routes used in static protocols.")
@@ -214,7 +213,7 @@ sect_routes.anonymous = true
 
 instance = sect_routes:option(ListValue, "instance", "Route instance", "")
 i = 0
-uciout:foreach("bird4", "static",
+uci:foreach("bird4", "static",
 	function (s)
 		instance:value(s[".name"])
 	end)
@@ -243,9 +242,11 @@ attribute:depends("type", "special")
 
 iface  = sect_routes:option(ListValue, "iface", "Interface", "")
 iface:depends("type", "iface")
-uciout:foreach("wireless", "wifi-iface",
+uci:foreach("network", "interface",
 	function(section)
-		iface:value(section[".name"])
+        if section[".name"] ~= "loopback" then
+            iface:value(section[".name"])
+        end
 	end)
 
 ip =  sect_routes:option(Value, "ip", "IP address", "")
