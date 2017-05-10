@@ -23,13 +23,16 @@ m.submit = false
 
 s = m:section(SimpleSection)
 
-start = s:option(Button, "_start", "Start")
+start = s:option(Button, "_start", "Start Bird4 Daemon:")
+start.inputtitle = "   Start   "
 start.inputstyle = "apply"
 
-stop = s:option(Button, "_stop", "Stop")
+stop = s:option(Button, "_stop", "Stop Bird4 Daemon:")
+stop.inputtitle = "   Stop   "
 stop.inputstyle = "remove"
 
-restart = s:option(Button, "_restart", "Restart")
+restart = s:option(Button, "_restart", "Restart Bird4 Daemon:")
+restart.inputtitle = "Restart"
 restart.inputstyle = "reload"
 
 output = s:option(DummyValue, "_value", "Service Status")
