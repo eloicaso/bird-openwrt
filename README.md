@@ -4,11 +4,17 @@ Package for OpenWRT to bring integration with UCI and LUCI to Bird4 and Bird6 da
 
 This repository contains an UCI module adding support for an user-friendly configuration of the BIRD daemon in OpenWRT systems and a LuCI application to control this UCI configuration using the web-based OpenWRT configuration system.
 
-**Dependences**: +bird\* +libuci +luci-base +uci +libuci-lua
+**Package Names**: luci-app-bird{4|6} and bird{4|6}-uci
+**Dependences**: +bird{4|6} +libuci +luci-base +uci +libuci-lua
+**Last Version**: 0.3
+**Terminal (UCI) Documentation**: [Link](https://github.com/eloicaso/bird-openwrt/blob/master/UCI-DOCUMENTATION.md)
+**Web (LUCI) Documentation**: [Link](https://github.com/eloicaso/bird-openwrt/blob/master/LUCI-DOCUMENTATION.md)
 
-## Important:
+## Known issues (v0.3):
+* LUCI Material Design Theme shows a "Loading page" in **Logs Page** preventing it to load. Moreover, the OpenWRT Theme crashes loading the **Log Page**.
+Please, go to `System -> Language and Style -> Design` and change it to any other avaiable Theme (*Bootstrap* or *Freifunk_Generic* are recommended).
 
-/etc/config/bird\* *MUST be configured with your correct settings BEFORE executing it. Otherwise, Bird may crash.*
+* There is a manual procedure to designate custom Routing Table IDs created through this package's UI. Please, visit [this page](https://github.com/eloicaso/bgp-bmx6-bird-docn/blob/master/EN/manual_procedures.md) for more details.
 
 ## How to compile:
 Due to the existence of Routing's bird-openwrt packages, if you want to build your system using this repo's bird packages, you need to proceed as follows:
