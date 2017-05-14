@@ -19,7 +19,8 @@ include $(INCLUDE_DIR)/kernel.mk
 
 BIRD := bird4
 PKG_NAME := $(BIRD)-openwrt
-PKG_RELEASE := 0.3
+PKG_VERSION := 0.3
+PKG_RELEASE := 1
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 PKG_LICENSE := GPL-3.0+
 uci := $(BIRD)-uci
