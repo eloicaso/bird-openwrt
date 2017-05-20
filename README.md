@@ -5,10 +5,15 @@ Package for OpenWRT to bring integration with UCI and LUCI to Bird4 and Bird6 da
 This repository contains an UCI module adding support for an user-friendly configuration of the BIRD daemon in OpenWRT systems and a LuCI application to control this UCI configuration using the web-based OpenWRT configuration system.
 
 **Package Names**: luci-app-bird{4|6} and bird{4|6}-uci
+
 **Dependences**: +bird{4|6} +libuci +luci-base +uci +libuci-lua
+
 **Last Version**: 0.3
+
 **Terminal (UCI) Documentation**: [Link](https://github.com/eloicaso/bird-openwrt/blob/master/UCI-DOCUMENTATION.md)
+
 **Web (LUCI) Documentation**: [Link](https://github.com/eloicaso/bird-openwrt/blob/master/LUCI-DOCUMENTATION.md)
+
 
 ## Known issues (v0.3):
 * LUCI Material Design Theme shows a "Loading page" in **Logs Page** preventing it to load. Moreover, the OpenWRT Theme crashes loading the **Log Page**.
