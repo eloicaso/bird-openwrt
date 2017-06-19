@@ -44,9 +44,6 @@ sect_templates.anonymous = false
 disabled = sect_templates:option(Flag, "disabled", "Disabled", "Enable/Disable BGP Protocol")
 disabled.optional=true
 
-description = sect_templates:option(TextValue, "description", "Description", "Description of the current BGP instance")
-description.optional = true
-
 table = sect_templates:option(ListValue, "table", "Table", "Set the table used for BGP Routing")
 table.optional=true
 uci:foreach("bird4", "table",
@@ -73,9 +70,6 @@ export.optional=true
 
 source_addr = sect_templates:option(Value, "source_address", "Source Address", "Source address for BGP routing. By default uses Router ID")
 source_addr.optional = true
-
-local_address = sect_templates:option(Value, "local_address", "Local BGP address", "")
-local_address.optional = false
 
 local_as = sect_templates:option(Value, "local_as", "Local AS", "")
 local_as.optional = false
@@ -189,6 +183,9 @@ end)
 igp_table:value("")
 igp_table.default = ""
 
+passive = sect_instances:option(Value, "passive", "Passive", "Disable automatic initialization of outgoing connections.")
+passive.optional=true
+
 import = sect_instances:option(Value, "import", "Import", imp_string)
 import.optional=true
 
@@ -197,9 +194,6 @@ export.optional=true
 
 source_address = sect_instances:option(Value, "source_address", "Source Address", "Source address for BGP routing. By default uses Router ID")
 source_address.optional = true
-
-local_address = sect_instances:option(Value, "local_address", "Local BGP address", "")
-local_address.optional=true
 
 local_as = sect_instances:option(Value, "local_as", "Local AS", "")
 local_as.optional=true

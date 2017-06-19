@@ -51,7 +51,7 @@ start() {
         echo "Starting ${BIRD} Service [ ... ]"
     fi
     if [ -f ${BIRD_ERR} ]; then
-        echo "" > ${BIRD_ERR}
+        echo -n "" > ${BIRD_ERR}
     else
         touch ${BIRD_ERR}
     fi
@@ -145,6 +145,7 @@ stop() {
             else
                 echo "${BIRD} - Stopped"
             fi
+            echo -n "" > ${BIRD_ERR}
         else
             if [ "${LUCI}" == "false" ]; then
                 echo -e "${BIRD} Daemon Stop Status: \033[0;31m[ FAILED ]\e[m"

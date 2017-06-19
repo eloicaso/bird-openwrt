@@ -39,11 +39,10 @@ write() {
 
 #Function: write_bool $1 $2
 # $1 string; $2 boolean
-# This function checks if $2 is true or false and write the $1 string into $BIRD_CONFIG file.
-# The function writes a # before the $2 string if its false.
+# This function checks if $2 is true and write the $1 string into $BIRD_CONFIG file.
 # Example: local N=0; write_bool $N
 write_bool() {
-    [ "$2" == 0 ] && writeToConfig "#   $1;" || writeToConfig "    $1;"
+    [ "$2" == 1 ] && writeToConfig "    $1;"
 }
 
 
@@ -161,7 +160,7 @@ prepare_global () {
 # This function gets each "route" section in the UCI configuration and sets each option in the bird4.conf file.
 # $1 is set as the ID of the current UCI route section. Each type of route has its own treatment.
 prepare_routes() {
-    local instance; local prefix; local via; local type
+    local instance; local prefix; local via; local type; local attribute; local iface
     local section="$1"
     local protoInstance="$2"
 
@@ -323,49 +322,46 @@ prepare_device() {
 # Careful! Template options will be replaced by "instance" options if there is any match.
 prepare_bgp_template() {
     local section="$1"
-    local disabled; local table; local import; local export; local local_address
+    local disabled; local table; local import; local export
     local local_as; local neighbor_address; local neighbor_as; local source_address
     local next_hop_self; local next_hop_keep; local rr_client; local rr_cluster_id
     local import_limit; local import_limit_action; local export_limit; local export_limit_action
     local receive_limit; local receive_limit_action; local igp_table
 
     get_bool disabled ${section}
-    get_bool next_hop_self ${section}
-    get_bool next_hop_keep ${section}
     get table ${section}
     get import ${section}
     get export ${section}
     get local_address ${section}
+
     get local_as ${section}
-    get igp_table ${section}
+    get neighbor_address ${section}
+    get neighbor_as ${section}
+
+    get_bool next_hop_self ${section}
+    get_bool next_hop_keep ${section}
     get rr_client ${section}
     get rr_cluster_id ${section}
+
     get import_limit ${section}
     get import_limit_action ${section}
     get export_limit ${section}
     get export_limit_action ${section}
+
     get receive_limit ${section}
     get receive_limit_action ${section}
-    get neighbor_address ${section}
-    get neighbor_as ${section}
+    get igp_table ${section}
 
     writeToConfig "#${section} template:"
     writeToConfig "template bgp ${section} {"
     [ -n "${disabled}" ] && write_bool disabled ${disabled}
-    write "    table ${table};" ${table}
-    write "    local as ${local_as};" ${local_as}
-    write "    source address ${local_address};" ${local_address}
-    write "    import ${import};" ${import}
-    write "    export ${export};" ${export}
-    if [ -n "${next_hop_self}" ]; then
-        [ "${next_hop_self}" = "1" ] && writeToConfig "    next hop self;" || writeToConfig "#    next hop self;"
-    fi
-    if [ -n "${next_hop_keep}" ]; then
-        [ "${next_hop_keep}" = "1" ] && writeToConfig "    next hop keep;" || writeToConfig "#    next hop keep;"
-    fi
+    writeToConfig "    table ${table};"
     [ -n "${igp_table}" ] && writeToConfig "    igp table ${igp_table};"
-    [ "${rr_client}" = "1" ] && writeToConfig "    rr client;" || writeToConfig "#    rr client;"
-    write "    rr cluster id ${rr_cluster_id};" ${rr_cluster_id}
+    writeToConfig "    local as ${local_as};"
+    writeToConfig "    source address ${local_address};"
+    writeToConfig "    import ${import};"
+    writeToConfig "    export ${export};"
+    [ -n "${neighbor_address}" -a -n "${neighbor_as}" ] && writeToConfig "    neighbor ${neighbor_address} as ${neighbor_as};"
     if [ -n "${import_limit}" -a "${import_limit}" > "0" ]; then
         [ -z "${import_limit_action}" ] && ${import_limit_action} = "warn"
         writeToConfig "    import limit ${import_limit} action ${import_limit_action};"
@@ -378,7 +374,10 @@ prepare_bgp_template() {
         [ -z "${receive_limit_action}" ] && ${receive_limit_action} = "warn"
         writeToConfig "    receive limit ${receive_limit} action ${receive_limit_action};"
     fi
-    [ -n "${neighbor_address}" -a -n "${neighbor_as}" ] && writeToConfig "    neighbor ${neighbor_address} as ${neighbor_as};"
+    [ -n "${next_hop_self}" ] && write_bool "    next hop self;" ${next_hop_self}
+    [ -n "${next_hop_keep}" ] && write_bool "    next hop keep;" ${next_hop_keep}
+    [ -n "${rr_client}" ]     && write_bool "    rr client;" ${rr_client}
+    [ -n "${rr_cluster_id}" ] && writeToConfig "    rr cluster id ${rr_cluster_id};"
     writeToConfig "}"
     writeToConfig " "
 }
@@ -391,49 +390,50 @@ prepare_bgp_template() {
 # Careful! The options set in bgp instances overlap bgp_template ones.
 prepare_bgp() {
     local section="$1"
-    local disabled; local table; local template; local description; local import
-    local export; local local_address; local local_as; local neighbor_address
+    local disabled; local table; local template; local description; local igp_table; local passive
+    local import; local export; local local_address; local local_as; local neighbor_address
     local neighbor_as; local rr_client; local rr_cluster_id; local import_limit
     local import_limit_action; local export_limit; local export_limit_action
     local receive_limit; local receive_limit_action; local igp_table
 
     get disabled ${section}
     get table ${section}
+    get igp_table ${section}
     get template ${section}
     get description ${section}
+    get passive ${section}
+
     get import ${section}
     get export ${section}
     get local_address ${section}
     get local_as ${section}
-    get rr_client ${section}
-    get rr_cluster_id ${section}
+    get neighbor_address ${section}
+
+    get neighbor_as ${section}
     get import_limit ${section}
     get import_limit_action ${section}
     get export_limit ${section}
     get export_limit_action ${section}
+
     get receive_limit ${section}
     get receive_limit_action ${section}
-    get neighbor_address ${section}
-    get neighbor_as ${section}
-    get igp_table ${section}
+    get_bool next_hop_self ${section}
+    get_bool next_hop_keep ${section}
+    get rr_client ${section}
+    get rr_cluster_id ${section}
 
     writeToConfig "#${section} configuration:"
-    [ -n "${template}" ] && writeToConfig "protocol bgp ${section} from ${template} {" || writeToConfig "protocol bgp ${section} {"
+    [ -n "${template}" ] && writeToConfig "protocol bgp ${section} from ${template} {" \
+                         || writeToConfig "protocol bgp ${section} {"
     [ -n "${disabled}" ] && write_bool disabled ${disabled}
-    write "    table ${table};" ${table}
-    write "    local as ${local_as};" ${local_as}
-    write "    source address ${local_address};" ${local_address}
-    write "    import ${import};" ${import}
-    write "    export ${export};" ${export}
-    if [ -n "${next_hop_self}" ]; then
-        [ "${next_hop_self}" = "1" ] && writeToConfig "    next hop self;" || writeToConfig "#    next hop self;"
-    fi
-    if [ -n "${next_hop_keep}" ]; then
-        [ "${next_hop_keep}" = "1" ] && writeToConfig "    next hop keep;" || writeToConfig "#    next hop keep;"
-    fi
+    writeToConfig "    table ${table};"
     [ -n "${igp_table}" ] && writeToConfig "    igp table ${igp_table};"
-    [ "${rr_client}" = "1" ] && writeToConfig "    rr client;" || writeToConfig "#    rr client;"
-    write "    rr cluster id ${rr_cluster_id};" ${rr_cluster_id}
+    [ -n "${passive}" ] && writeToConfig "    passive;" ${passive}
+    writeToConfig "    local as ${local_as};"
+    writeToConfig "    source address ${local_address};"
+    writeToConfig "    import ${import};"
+    writeToConfig "    export ${export};"
+    [ -n "${neighbor_address}" -a -n "${neighbor_as}" ] && writeToConfig "    neighbor ${neighbor_address} as ${neighbor_as};"
     if [ -n "${import_limit}" -a "${import_limit}" > "0" ]; then
         [ -z "${import_limit_action}" ] && ${import_limit_action} = "warn"
         writeToConfig "    import limit ${import_limit} action ${import_limit_action};"
@@ -446,7 +446,10 @@ prepare_bgp() {
         [ -z "${receive_limit_action}" ] && ${receive_limit_action} = "warn"
         writeToConfig "    receive limit ${receive_limit} action ${receive_limit_action};"
     fi
-    [ -n "${neighbor_address}" -a -n "${neighbor_as}" ] && writeToConfig "    neighbor ${neighbor_address} as ${neighbor_as};"
+    [ -n "${next_hop_self}" ] && write_bool "    next hop self;" ${next_hop_self}
+    [ -n "${next_hop_keep}" ] && write_bool "    next hop keep;" ${next_hop_keep}
+    [ -n "${rr_client}" ] && write_bool "    rr client;" ${rr_client}
+    [ -n "${rr_cluster_id}" ] && writeToConfig "    rr cluster id ${rr_cluster_id};"
     writeToConfig "}"
     writeToConfig " "
 }
