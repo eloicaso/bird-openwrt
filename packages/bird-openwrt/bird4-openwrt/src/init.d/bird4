@@ -110,8 +110,14 @@ start() {
         fi
     done
 
-    if [ -s ${SERVICE_PID_FILE} ]; then
-        if [ -s ${BIRD_ERR} ]; then
+    # PID & ERROR contents are read from their files to avoid an issue
+    # where if [ -s ${SERVICE_PID_FILE} ] and if [ -s ${BIRD_ERR} ]
+    # fails unless a previous command reads its contents making its
+    # behaviour unreliable.
+    SVC_PID="$(cat ${SERVICE_PID_FILE})"
+    BRDERR_TXT="$(cat ${BIRD_ERR})"
+    if [ -n "${SVC_PID}" ]; then
+        if [ -n "${BRDERR_TXT}" ]; then
             if [ "${LUCI}" == "false" ]; then
                 echo -e "${BIRD} Daemon already started. Status \033[0;32m[ RUNNING ]\e[m"
             else
