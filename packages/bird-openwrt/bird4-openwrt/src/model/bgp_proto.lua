@@ -183,8 +183,10 @@ end)
 igp_table:value("")
 igp_table.default = ""
 
-passive = sect_instances:option(Value, "passive", "Passive", "Disable automatic initialization of outgoing connections.")
+passive = sect_instances:option(Flag, "passive", "Passive", "Disable automatic initialization of outgoing connections.")
 passive.optional=true
+passive.rmempty = false
+passive.default = nil
 
 import = sect_instances:option(Value, "import", "Import", imp_string)
 import.optional=true

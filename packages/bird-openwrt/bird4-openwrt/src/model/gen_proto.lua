@@ -237,8 +237,11 @@ listVia:depends("type", "multipath")
 listVia.optional=false
 listVia.datatype = "ip4addr"
 
-attribute = sect_routes:option(Value, "attribute", "Attribute", "Types are: unreachable, prohibit and blackhole")
+attribute = sect_routes:option(ListValue, "attribute", "Attribute", "")
 attribute:depends("type", "special")
+attribute:value("unreachable")
+attribute:value("prohibit")
+attribute:value("blackhole")
 
 iface  = sect_routes:option(ListValue, "iface", "Interface", "")
 iface:depends("type", "iface")

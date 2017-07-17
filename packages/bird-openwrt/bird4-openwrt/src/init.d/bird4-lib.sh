@@ -332,7 +332,7 @@ prepare_bgp_template() {
     get table ${section}
     get import ${section}
     get export ${section}
-    get local_address ${section}
+    get source_address ${section}
 
     get local_as ${section}
     get neighbor_address ${section}
@@ -355,12 +355,12 @@ prepare_bgp_template() {
     writeToConfig "#${section} template:"
     writeToConfig "template bgp ${section} {"
     [ -n "${disabled}" ] && write_bool disabled ${disabled}
-    writeToConfig "    table ${table};"
+    [ -n "${table}" ] && writeToConfig "    table ${table};"
     [ -n "${igp_table}" ] && writeToConfig "    igp table ${igp_table};"
-    writeToConfig "    local as ${local_as};"
-    writeToConfig "    source address ${local_address};"
-    writeToConfig "    import ${import};"
-    writeToConfig "    export ${export};"
+    [ -n "${local_as}" ] && writeToConfig "    local as ${local_as};"
+    [ -n "${source_address}" ] && writeToConfig "    source address ${source_address};"
+    [ -n "${import}" ] && writeToConfig "    import ${import};"
+    [ -n "${export}" ] && writeToConfig "    export ${export};"
     [ -n "${neighbor_address}" -a -n "${neighbor_as}" ] && writeToConfig "    neighbor ${neighbor_address} as ${neighbor_as};"
     if [ -n "${import_limit}" -a "${import_limit}" > "0" ]; then
         [ -z "${import_limit_action}" ] && ${import_limit_action} = "warn"
@@ -391,7 +391,7 @@ prepare_bgp_template() {
 prepare_bgp() {
     local section="$1"
     local disabled; local table; local template; local description; local igp_table; local passive
-    local import; local export; local local_address; local local_as; local neighbor_address
+    local import; local export; local source_address; local local_as; local neighbor_address
     local neighbor_as; local rr_client; local rr_cluster_id; local import_limit
     local import_limit_action; local export_limit; local export_limit_action
     local receive_limit; local receive_limit_action; local igp_table
@@ -405,7 +405,7 @@ prepare_bgp() {
 
     get import ${section}
     get export ${section}
-    get local_address ${section}
+    get source_address ${section}
     get local_as ${section}
     get neighbor_address ${section}
 
@@ -429,10 +429,10 @@ prepare_bgp() {
     writeToConfig "    table ${table};"
     [ -n "${igp_table}" ] && writeToConfig "    igp table ${igp_table};"
     [ -n "${passive}" ] && writeToConfig "    passive;" ${passive}
-    writeToConfig "    local as ${local_as};"
-    writeToConfig "    source address ${local_address};"
-    writeToConfig "    import ${import};"
-    writeToConfig "    export ${export};"
+    [ -n "${local_as}" ] && writeToConfig "    local as ${local_as};"
+    [ -n "${source_address}" ] && writeToConfig "    source address ${source_address};"
+    [ -n "${import}" ] && writeToConfig "    import ${import};"
+    [ -n "${export}" ] && writeToConfig "    export ${export};"
     [ -n "${neighbor_address}" -a -n "${neighbor_as}" ] && writeToConfig "    neighbor ${neighbor_address} as ${neighbor_as};"
     if [ -n "${import_limit}" -a "${import_limit}" > "0" ]; then
         [ -z "${import_limit_action}" ] && ${import_limit_action} = "warn"
