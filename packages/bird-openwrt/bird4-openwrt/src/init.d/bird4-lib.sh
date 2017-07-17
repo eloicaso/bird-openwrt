@@ -426,7 +426,7 @@ prepare_bgp() {
     [ -n "${template}" ] && writeToConfig "protocol bgp ${section} from ${template} {" \
                          || writeToConfig "protocol bgp ${section} {"
     [ -n "${disabled}" ] && write_bool disabled ${disabled}
-    writeToConfig "    table ${table};"
+    [ -n "${table}" ] && writeToConfig "    table ${table};"
     [ -n "${igp_table}" ] && writeToConfig "    igp table ${igp_table};"
     [ -n "${passive}" ] && writeToConfig "    passive;" ${passive}
     [ -n "${local_as}" ] && writeToConfig "    local as ${local_as};"
