@@ -16,6 +16,8 @@ This repository contains an UCI module adding support for an user-friendly confi
 
 
 ## Known issues (v0.3):
+* There is an issue with pre-built images. It seems that the UCI-Default Scripts are not applied for some reason. If you face this situation, just copy both packages in your /tmp and and execute "opkg install PackageName.ipk --force-reinstall". It will overwrite your /etc/config/bird{4|6}, create a backup of this configuration.
+
 * LUCI Material Design Theme shows a "Loading page" in **Logs Page** preventing it to load. Moreover, the OpenWRT Theme crashes loading the **Log Page**.
 Please, go to `System -> Language and Style -> Design` and change it to any other avaiable Theme (*Bootstrap* or *Freifunk_Generic* are recommended).
 
@@ -35,6 +37,10 @@ OR
 src-link birdwrt /path/to/your/git/clone/bird-openwrt
 ```
 
+* Disable OpenWRT-Routing repository to avoid getting the outdated package
+```
+# src-git routing https://github.com/openwrt-routing/packages.git
+```
 
 * Update and install all packages in feeds
 ```

@@ -62,7 +62,7 @@ start() {
         ${BIRD_BIN} -d -c ${BIRD_CONFIG} -P ${SERVICE_PID_FILE} -D ${BIRD_LOG} &> ${BIRD_ERR} &
     else
         #Set Bird4 configuration location:
-        local UCI_config_File
+        local UCI_config_file
         local log_file
         get UCI_config_file 'bird'
         get log_file 'global'

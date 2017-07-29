@@ -29,7 +29,7 @@ s_bird_uci.addremove = False
 
 uuc = s_bird_uci:option(Flag, "use_UCI_config", "Use UCI configuration", "Use UCI configuration instead of the /etc/bird4.conf file")
 
-ucf = s_bird_uci:option(Value, "UCI_config_File", "UCI File", "Specify the file to place the UCI-translated configuration")
+ucf = s_bird_uci:option(Value, "UCI_config_file", "UCI File", "Specify the file to place the UCI-translated configuration")
 ucf.default = "/tmp/bird4.conf"
 
 -- Named Section: "table"
